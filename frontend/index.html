@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ATS Resume Generator</h1>
+
+        <!-- Workflow 1: Manual Form Input -->
+        <form id="profileForm">
+            <h3>Option 1: Fill Out Your Profile Manually</h3>
+            <input type="text" placeholder="Full Name" name="name" required>
+            <input type="email" placeholder="Email" name="email" required>
+            <input type="text" placeholder="Phone Number" name="phone" required>
+            <textarea name="experience" placeholder="Your Work Experience" required></textarea>
+            <textarea name="skills" placeholder="Your Skills (comma-separated)" required></textarea>
+            <textarea name="education" placeholder="Your Education" required></textarea>
+            <textarea name="additional_info" placeholder="Paste the Job Description here" required></textarea>
+            <button type="submit">Generate Resume from Form</button>
+        </form>
+
+        <hr>
+
+        <!-- Workflow 2: PDF Upload (Initially part of the main form area) -->
+        <div id="uploadSection">
+            <h3>Option 2: Upload an Existing Resume</h3>
+            <label for="resumeFile">Select a PDF file to upload:</label>
+            <input type="file" id="resumeFile" name="resumeFile" accept=".pdf">
+            <button type="button" id="uploadBtn">Upload & Parse Resume</button>
+        </div>
+        
+        <!-- This section is hidden by default and will appear after a PDF is parsed -->
+        <div id="modificationZone" style="display: none;">
+            <h3>Resume Parsed! Now, let's tailor it.</h3>
+            <div id="parsedTextPreview" class="preview-box"></div>
+            <form id="modificationForm">
+                <label for="jobTitle">What is the target job title?</label>
+                <input type="text" id="jobTitle" name="jobTitle" placeholder="e.g., Senior Software Engineer" required>
+                <label for="keySkills">What are the 2-3 most important skills for this role?</label>
+                <input type="text" id="keySkills" name="keySkills" placeholder="e.g., Python, AWS, Microservices" required>
+                <label for="tone">What tone should the new resume have?</label>
+                <select id="tone" name="tone">
+                    <option value="Professional">Professional</option>
+                    <option value="Creative">Creative</option>
+                    <option value="Highly Technical">Highly Technical</option>
+                </select>
+                <button type="submit">Apply Modifications & Generate</button>
+            </form>
+        </div>
+
+        <hr>
+        
+        <h2>Generated Preview</h2>
+        <div id="resumeContainer"></div>
+        <button id="downloadBtn" style="display: none;">Download PDF</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ATS Resume Generator</h1>
+        <form id="profileForm">
+            <input type="text" placeholder="Full Name" name="name" required>
+            <input type="email" placeholder="Email" name="email" required>
+            <input type="text" placeholder="Phone Number" name="phone" required>
+            <textarea name="experience" placeholder="Experience" required></textarea>
+            <textarea name="skills" placeholder="Skills" required></textarea>
+            <textarea name="education" placeholder="Education" required></textarea>
+            <textarea name="additional_info" placeholder="Paste the job description here" required></textarea>
+            <button type="submit">Generate Resume</button>
+        </form>
+        <hr>
+        <h2>Generated Preview</h2>
+        <div id="resumeContainer"></div>
+        <button id="downloadBtn" style="display: none;">Download PDF</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ATS Resume Generator</h1>
+
+        <form id="profileForm">
+            <input type="text" placeholder="Full Name" name="name" required>
+            <input type="email" placeholder="Email" name="email" required>
+            <input type="text" placeholder="Phone Number" name="phone" required>
+            <textarea name="experience" placeholder="Experience" required></textarea>
+            <textarea name="skills" placeholder="Skills" required></textarea>
+            <textarea name="education" placeholder="Education" required></textarea>
+            <textarea name="additional_info" placeholder="Additional Info"></textarea>
+            <button type="submit">Generate Resume</button>
+        </form>
+
+        <div id="resumeContainer"></div>
+        <button id="downloadBtn">Download PDF</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+</body>
+</html> -->

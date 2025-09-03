@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Resume</title>
+    <style>
+        /* Modern, ATS-friendly styles */
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            font-size: 11pt;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            font-weight: normal;
+        }
+        h1 {
+            font-size: 26pt;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        p {
+            margin: 8px 0;
+        }
+        ul {
+            padding-left: 20px;
+            margin: 5px 0;
+            list-style-type: disc;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        .contact-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 10pt;
+        }
+        .experience-item {
+            margin-bottom: 20px;
+        }
+        .job-title {
+            font-size: 12pt;
+            font-weight: bold;
+        }
+        .job-dates {
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    {% if name %}
+        <h1>{{ name }}</h1>
+    {% endif %}
+
+    {% if email or phone %}
+        <p class="contact-info">{{ email }}{% if email and phone %} | {% endif %}{{ phone }}</p>
+    {% endif %}
+
+    <!-- Professional Summary Section -->
+    {% if summary %}
+        <div class="section">
+            <h2>Professional Summary</h2>
+            <p>{{ summary }}</p>
+        </div>
+    {% endif %}
+
+    <!-- Work Experience Section -->
+    {% if experience %}
+        <div class="section">
+            <h2>Work Experience</h2>
+            {% for job in experience %}
+                <div class="experience-item">
+                    <p class="job-title">{{ job.title }} at {{ job.company }}</p>
+                    <p class="job-dates">{{ job.dates }}</p>
+                    {% if job.bullets %}
+                        <ul>
+                            {% for bullet in job.bullets %}
+                                <li>{{ bullet }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Education Section -->
+    {% if education %}
+        <div class="section">
+            <h2>Education</h2>
+            <p>{{ education }}</p>
+        </div>
+    {% endif %}
+
+    <!-- Skills Section -->
+    {% if skills %}
+        <div class="section">
+            <h2>Skills</h2>
+            <p>{{ skills | join(' &bull; ') }}</p>
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Resume</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.5; color: #333; }
+        h1, h2, h3 { color: #2c3e50; margin: 0; padding: 0; }
+        h1 { font-size: 24pt; text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+        h2 { font-size: 14pt; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; }
+        p { margin: 5px 0; }
+        ul { padding-left: 20px; margin: 5px 0; }
+        li { margin-bottom: 5px; }
+        .contact-info { text-align: center; margin: 5px 0 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>{{ name }}</h1>
+    <p class="contact-info">{{ email }} | {{ phone }}</p>
+    <h2>Professional Summary</h2>
+    <p>{{ summary }}</p>
+    <h2>Work Experience</h2>
+    {% for job in experience %}
+        <h3>{{ job.title }} at {{ job.company }}</h3>
+        <p><em>{{ job.dates }}</em></p>
+        <ul>
+            {% for bullet in job.bullets %}
+                <li>{{ bullet }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    <h2>Education</h2>
+    <p>{{ education }}</p>
+    <h2>Skills</h2>
+    <p>{{ skills | join(', ') }}</p>
+</body>
+</html> -->
