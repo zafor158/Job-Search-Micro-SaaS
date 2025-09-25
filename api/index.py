@@ -92,6 +92,5 @@ async def documents():
         status_code=503
     )
 
-# Simple handler for Vercel
-def handler(request):
-    return app(request.scope, request.receive, request.send)
+# Export the app directly - let Vercel auto-detect
+# No custom handler function to avoid issubclass issues
