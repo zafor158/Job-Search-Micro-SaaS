@@ -221,7 +221,7 @@
 
                 // Store the token and redirect
                 localStorage.setItem('supabase_token', data.access_token);
-                window.location.href = '/dashboard'; // Redirect to dashboard
+                window.location.href = '/'; // Redirect to main page
 
             } catch (error) {
                 showMessage(loginMessage, error.message);
