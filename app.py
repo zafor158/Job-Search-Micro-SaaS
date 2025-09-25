@@ -236,18 +236,112 @@ async def update_profile():
 async def generate_resume():
     """Generate resume"""
     return JSONResponse(content={
-        "message": "Resume generated successfully",
-        "resume_text": "Sample resume content generated",
-        "status": "success"
+        "name": "John Doe",
+        "email": "john.doe@email.com",
+        "phone": "+1 (555) 123-4567",
+        "summary": "Experienced software developer with 5+ years of expertise in Python, JavaScript, and full-stack development. Passionate about creating efficient solutions and leading development teams.",
+        "experience": [
+            {
+                "title": "Senior Software Developer",
+                "company": "Tech Solutions Inc",
+                "dates": "2020 - Present",
+                "bullets": [
+                    "Led a team of 5 developers in building scalable web applications",
+                    "Reduced application load time by 40% through code optimization",
+                    "Implemented CI/CD pipelines improving deployment efficiency by 60%",
+                    "Mentored junior developers and conducted code reviews"
+                ]
+            },
+            {
+                "title": "Software Developer",
+                "company": "Digital Innovations",
+                "dates": "2018 - 2020",
+                "bullets": [
+                    "Developed RESTful APIs using Python and FastAPI",
+                    "Built responsive web applications with React and Node.js",
+                    "Collaborated with cross-functional teams on product development",
+                    "Maintained and updated legacy systems"
+                ]
+            }
+        ],
+        "projects": [
+            {
+                "title": "E-commerce Platform",
+                "bullets": [
+                    "Built full-stack e-commerce solution serving 10,000+ users",
+                    "Implemented payment processing with Stripe API",
+                    "Designed responsive UI with React and Material-UI",
+                    "Achieved 99.9% uptime through robust error handling"
+                ]
+            },
+            {
+                "title": "Data Analytics Dashboard",
+                "bullets": [
+                    "Created real-time analytics dashboard using Python and D3.js",
+                    "Processed large datasets with Pandas and NumPy",
+                    "Implemented automated reporting system",
+                    "Reduced manual reporting time by 80%"
+                ]
+            }
+        ],
+        "education": "Bachelor of Science in Computer Science, University of Technology (2014-2018)",
+        "skills": ["Python", "JavaScript", "React", "Node.js", "FastAPI", "PostgreSQL", "Docker", "AWS", "Git", "Agile/Scrum"]
     })
 
 @app.post("/api/generate_modified_resume")
 async def generate_modified_resume():
     """Generate modified resume"""
     return JSONResponse(content={
-        "message": "Modified resume generated successfully",
-        "resume_text": "Sample modified resume content",
-        "status": "success"
+        "name": "John Doe",
+        "email": "john.doe@email.com", 
+        "phone": "+1 (555) 123-4567",
+        "summary": "Senior Software Developer with 6+ years of experience specializing in Python, JavaScript, and cloud technologies. Proven track record of leading development teams and delivering high-impact solutions.",
+        "experience": [
+            {
+                "title": "Lead Software Developer",
+                "company": "Tech Solutions Inc",
+                "dates": "2021 - Present",
+                "bullets": [
+                    "Lead a team of 8 developers in building enterprise-scale applications",
+                    "Architected microservices solution reducing system complexity by 50%",
+                    "Implemented automated testing increasing code coverage to 95%",
+                    "Mentored 3 junior developers and established coding standards"
+                ]
+            },
+            {
+                "title": "Senior Software Developer", 
+                "company": "Digital Innovations",
+                "dates": "2019 - 2021",
+                "bullets": [
+                    "Developed high-performance APIs handling 1M+ requests daily",
+                    "Built real-time data processing pipeline using Python and Kafka",
+                    "Led migration from monolithic to microservices architecture",
+                    "Collaborated with DevOps team on containerization strategy"
+                ]
+            }
+        ],
+        "projects": [
+            {
+                "title": "Cloud-Native E-commerce Platform",
+                "bullets": [
+                    "Designed and built scalable e-commerce platform on AWS",
+                    "Implemented auto-scaling and load balancing for 50,000+ concurrent users",
+                    "Integrated payment processing with fraud detection",
+                    "Achieved 99.99% uptime with comprehensive monitoring"
+                ]
+            },
+            {
+                "title": "AI-Powered Analytics Platform",
+                "bullets": [
+                    "Developed machine learning pipeline for predictive analytics",
+                    "Built real-time dashboard with React and WebSocket connections",
+                    "Implemented data visualization using D3.js and Chart.js",
+                    "Reduced manual analysis time by 90% through automation"
+                ]
+            }
+        ],
+        "education": "Master of Science in Computer Science, University of Technology (2016-2018)\nBachelor of Science in Computer Science, University of Technology (2012-2016)",
+        "skills": ["Python", "JavaScript", "React", "Node.js", "FastAPI", "PostgreSQL", "MongoDB", "Docker", "Kubernetes", "AWS", "Azure", "Git", "Agile/Scrum", "Machine Learning"]
     })
 
 # Cover Letter Generation Endpoints
@@ -255,9 +349,25 @@ async def generate_modified_resume():
 async def generate_cover_letter():
     """Generate cover letter"""
     return JSONResponse(content={
-        "message": "Cover letter generated successfully",
-        "cover_letter_text": "Sample cover letter content generated",
-        "status": "success"
+        "cover_letter_text": """Dear Hiring Manager,
+
+I am writing to express my strong interest in the Software Developer position at your company. With over 5 years of experience in full-stack development and a passion for creating innovative solutions, I am confident that I would be a valuable addition to your team.
+
+In my current role as Senior Software Developer at Tech Solutions Inc, I have successfully led development teams and delivered high-quality applications that serve thousands of users. My expertise spans across Python, JavaScript, React, and Node.js, with a particular strength in building scalable web applications and RESTful APIs.
+
+Key highlights of my experience include:
+• Led a team of 5 developers in building scalable web applications
+• Reduced application load time by 40% through code optimization
+• Implemented CI/CD pipelines improving deployment efficiency by 60%
+• Built full-stack e-commerce solution serving 10,000+ users
+• Created real-time analytics dashboard using Python and D3.js
+
+I am particularly drawn to your company's commitment to innovation and excellence. I believe my technical skills, leadership experience, and passion for continuous learning align perfectly with your team's goals. I am excited about the opportunity to contribute to your projects and grow with your organization.
+
+Thank you for considering my application. I would welcome the opportunity to discuss how my experience and skills can contribute to your team's success. I am available for an interview at your convenience.
+
+Sincerely,
+John Doe"""
     })
 
 @app.post("/api/generate_matched_cover_letter")
