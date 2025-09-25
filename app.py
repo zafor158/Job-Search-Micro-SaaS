@@ -281,8 +281,27 @@ async def match_jobs():
                 "company": "Tech Corp",
                 "location": "Remote",
                 "salary": "$80,000 - $120,000",
-                "description": "Looking for an experienced software developer",
-                "url": "https://example.com/job/1"
+                "description": "Looking for an experienced software developer with Python and React skills",
+                "url": "https://example.com/job/1",
+                "match_percentage": 85
+            },
+            {
+                "title": "Python Developer",
+                "company": "Data Solutions",
+                "location": "New York",
+                "salary": "$90,000 - $130,000", 
+                "description": "Senior Python developer position for data processing team",
+                "url": "https://example.com/job/2",
+                "match_percentage": 92
+            },
+            {
+                "title": "Full Stack Developer",
+                "company": "StartupXYZ",
+                "location": "San Francisco",
+                "salary": "$100,000 - $150,000",
+                "description": "Full stack developer with React and Node.js experience",
+                "url": "https://example.com/job/3", 
+                "match_percentage": 78
             }
         ],
         "status": "success"
@@ -292,17 +311,32 @@ async def match_jobs():
 @app.get("/api/documents")
 async def get_documents():
     """Get user documents"""
-    return JSONResponse(content={
-        "documents": [
-            {
-                "id": "1",
-                "name": "My Resume",
-                "type": "resume",
-                "created_at": "2024-01-01T00:00:00Z"
-            }
-        ],
-        "status": "success"
-    })
+    return JSONResponse(content=[
+        {
+            "id": "1",
+            "name": "My Resume",
+            "type": "resume",
+            "created_at": "2024-01-01T00:00:00Z",
+            "file_size": "245KB",
+            "download_url": "/api/documents/1/pdf"
+        },
+        {
+            "id": "2",
+            "name": "Cover Letter - Tech Corp",
+            "type": "cover_letter", 
+            "created_at": "2024-01-15T00:00:00Z",
+            "file_size": "89KB",
+            "download_url": "/api/documents/2/pdf"
+        },
+        {
+            "id": "3",
+            "name": "Updated Resume v2",
+            "type": "resume",
+            "created_at": "2024-01-20T00:00:00Z", 
+            "file_size": "267KB",
+            "download_url": "/api/documents/3/pdf"
+        }
+    ])
 
 @app.get("/api/documents/{doc_id}/pdf")
 async def get_document_pdf(doc_id: str):
@@ -344,20 +378,34 @@ async def upload_avatar():
 @app.get("/api/applications")
 async def get_applications():
     """Get user applications"""
-    return JSONResponse(content={
-        "applications": [
-            {
-                "id": "1",
-                "job_title": "Software Developer",
-                "company": "Tech Corp",
-                "location": "Remote",
-                "status": "Applied",
-                "applied_date": "2024-01-01",
-                "job_url": "https://example.com/job/1"
-            }
-        ],
-        "status": "success"
-    })
+    return JSONResponse(content=[
+        {
+            "id": "1",
+            "job_title": "Software Developer",
+            "company": "Tech Corp",
+            "location": "Remote",
+            "status": "Applied",
+            "applied_date": "2024-01-01",
+            "job_url": "https://example.com/job/1",
+            "salary_range": "$80,000 - $120,000",
+            "job_type": "Full-time",
+            "job_description": "Looking for an experienced software developer",
+            "deadline": "2024-02-01"
+        },
+        {
+            "id": "2", 
+            "job_title": "Python Developer",
+            "company": "Data Solutions",
+            "location": "New York",
+            "status": "Interview",
+            "applied_date": "2024-01-15",
+            "job_url": "https://example.com/job/2",
+            "salary_range": "$90,000 - $130,000",
+            "job_type": "Full-time",
+            "job_description": "Senior Python developer position",
+            "deadline": "2024-02-15"
+        }
+    ])
 
 @app.post("/api/applications")
 async def create_application():
