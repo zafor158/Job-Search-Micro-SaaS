@@ -221,8 +221,7 @@
 
                 // Store the token and redirect
                 localStorage.setItem('supabase_token', data.access_token);
-                window.location.href = '/indexnew.html'; // Or your main app file name
-                // window.location.href = '/app_final.html';
+                window.location.href = '/dashboard'; // Redirect to dashboard
 
             } catch (error) {
                 showMessage(loginMessage, error.message);

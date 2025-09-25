@@ -115,9 +115,9 @@ async def auth():
         </html>
         """, status_code=404)
 
-# Main app page - requires authentication
-@app.get("/index", response_class=HTMLResponse)
-async def index():
+# Dashboard route - main app interface
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard():
     try:
         with open("indexnew.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
@@ -161,12 +161,13 @@ async def index():
         <body>
             <div class="container">
                 <h1>Dashboard</h1>
-                <p>Main app interface not found. Please check file paths.</p>
-                <a href="/auth" class="btn">Go to Login</a>
+                <p>Welcome to your Job Search Micro-SaaS dashboard!</p>
+                <p>Your main app interface is loading...</p>
+                <a href="/auth" class="btn">Back to Login</a>
             </div>
         </body>
         </html>
-        """, status_code=404)
+        """)
 
 # API endpoints (without database)
 @app.post("/api/signup")
