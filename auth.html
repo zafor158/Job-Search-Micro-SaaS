@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .auth-container { background-color: white; padding: 2.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #111827; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: #374151; }
+        input { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem; box-sizing: border-box; }
+        input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); }
+    .primary-btn { width: 100%; padding: 0.75rem; border: none; background: linear-gradient(90deg,#5b21b6,#4f46e5); color: white; font-weight: 600; border-radius: 0.5rem; cursor: pointer; transition: transform 0.08s ease, opacity 0.12s; }
+        .primary-btn:hover { background: #4338ca; }
+    .primary-btn[disabled] { opacity: 0.6; cursor: not-allowed; transform: none }
+    .avatar-preview { width: 80px; height: 80px; border-radius: 9999px; object-fit: cover; border: 2px solid #eef2ff; display: inline-block; }
+    .signup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .signup-note { font-size: 0.9rem; color: #6b7280; margin-bottom: 0.75rem }
+    .spinner { display:inline-block; width:18px; height:18px; border:3px solid rgba(255,255,255,0.15); border-left-color:white; border-radius:50%; animation:spin 0.8s linear infinite; vertical-align:middle }
+        .toggle-link { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; }
+        .toggle-link a { color: #4f46e5; text-decoration: none; font-weight: 600; }
+        .message { text-align: center; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; font-weight: 500; }
+        .message.error { background-color: #fee2e2; color: #b91c1c; }
+        .message.success { background-color: #dcfce7; color: #166534; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div id="login-form">
+            <h2>Welcome Back</h2>
+            <div id="login-message" class="message" style="display: none;"></div>
+            <form>
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="primary-btn">Log In</button>
+            </form>
+            <p class="toggle-link">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
+        </div>
+
+        <div id="signup-form" style="display: none;">
+            <h2>Create an Account</h2>
+            <div id="signup-message" class="message" style="display: none;"></div>
+            <form id="signupForm">
+                <div class="signup-grid">
+                    <div>
+                        <div class="form-group">
+                            <label for="signup-name">Full name</label>
+                            <input type="text" id="signup-name" placeholder="Jane Doe">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-username">Username</label>
+                            <input type="text" id="signup-username" placeholder="janedoe">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-dob">Date of birth</label>
+                            <input type="date" id="signup-dob">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-phone">Phone number</label>
+                            <input type="tel" id="signup-phone" placeholder="+44 7123 456789">
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;">
+                        <img id="avatarPreview" class="avatar-preview" src="" alt="Avatar preview" style="display:none">
+                        <div class="form-group" style="width:100%;">
+                            <label for="signup-avatar">Profile picture</label>
+                            <input type="file" id="signup-avatar" accept="image/*">
+                        </div>
+                        <div class="signup-note">Add a profile photo to personalize your account.</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="signup-confirm">Confirm Password</label>
+                    <input type="password" id="signup-confirm" required minlength="6">
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:0.5rem;">
+                    <input type="checkbox" id="signup-tos">
+                    <label for="signup-tos" style="margin:0;">I agree to the Terms of Service</label>
+                </div>
+                <button type="submit" id="signupSubmit" class="primary-btn">Sign Up</button>
+            </form>
+            <p class="toggle-link">Already have an account? <a href="#" id="show-login">Log In</a></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        
+        const loginForm = document.querySelector('#login-form form');
+        const signupForm = document.querySelector('#signup-form form');
+        const loginMessage = document.getElementById('login-message');
+        const signupMessage = document.getElementById('signup-message');
+
+        // Toggle between forms
+        document.getElementById('show-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+        });
+
+        document.getElementById('show-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        });
+
+        const showMessage = (element, text, isError = true) => {
+            element.textContent = text;
+            element.className = isError ? 'message error' : 'message success';
+            element.style.display = 'block';
+        };
+
+        // Handle Signup (collect optional fields and avatar file as base64)
+        const avatarInputEl = document.getElementById('signup-avatar');
+        const avatarPreviewEl = document.getElementById('avatarPreview');
+        avatarInputEl.addEventListener('change', (ev) => {
+            const f = ev.target.files && ev.target.files[0];
+            if (!f) { avatarPreviewEl.style.display = 'none'; avatarPreviewEl.src = ''; return; }
+            const reader = new FileReader();
+            reader.onload = () => { avatarPreviewEl.src = reader.result; avatarPreviewEl.style.display = 'inline-block'; };
+            reader.readAsDataURL(f);
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value || null;
+            const username = document.getElementById('signup-username').value || null;
+            const dob = document.getElementById('signup-dob').value || null;
+            const phone = document.getElementById('signup-phone').value || null;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+            const tos = document.getElementById('signup-tos').checked;
+            // Basic client validation
+            if (password !== confirm) { showMessage(signupMessage, 'Passwords do not match'); return; }
+            if (!tos) { showMessage(signupMessage, 'You must agree to the Terms of Service'); return; }
+
+            // Read avatar file if present
+            let avatar_base64 = null;
+            if (avatarInputEl && avatarInputEl.files && avatarInputEl.files[0]) {
+                const file = avatarInputEl.files[0];
+                avatar_base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // disable submit and show spinner
+            const submitBtn = document.getElementById('signupSubmit');
+            submitBtn.disabled = true;
+            const oldText = submitBtn.textContent;
+            submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
+            signupMessage.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, dob, phone, email, password, confirm_password: confirm, tos, avatar_base64 })
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const msg = data.detail || data.message || 'Signup failed';
+                    throw new Error(msg);
+                }
+
+                showMessage(signupMessage, 'Signup successful! You can now log in.', false);
+                // Persist signup info locally so the main app can display it before login
+                try {
+                    const savedProfile = { name, username, dob, phone, email, password, tos, avatar_base64 };
+                    localStorage.setItem('saved_signup_profile', JSON.stringify(savedProfile));
+                } catch (e) { /* ignore storage errors */ }
+                setTimeout(() => {
+                    document.getElementById('show-login').click();
+                    document.getElementById('login-email').value = email;
+                }, 1200);
+            } catch (error) {
+                showMessage(signupMessage, error.message || String(error));
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = oldText;
+            }
+        });
+
+        // Handle Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail);
+
+                // Store the token and redirect
+                localStorage.setItem('supabase_token', data.access_token);
+                window.location.href = '/indexnew.html'; // Or your main app file name
+                // window.location.href = '/app_final.html';
+
+            } catch (error) {
+                showMessage(loginMessage, error.message);
+            }
+        });
+    </script>
+</body>
+</html>

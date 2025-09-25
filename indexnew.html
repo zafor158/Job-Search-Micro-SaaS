@@ -1,0 +1,2946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search Micro-SaaS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+    // Determine login state. We intentionally DO NOT redirect here so
+    // the site can display saved signup info on the Account tab before login.
+    const token = localStorage.getItem('supabase_token');
+    const isLoggedIn = !!token;
+
+    // Account editing removed. Account page is read-only and served server-side.
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-sidebar: #111827;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-on-dark: #e5e7eb;
+            --brand-color: #4f46e5;
+            --brand-color-light: #e0e7ff;
+            --border-color: #e5e7eb;
+            --danger-color: #b91c1c;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Pushes logout button to the bottom */
+            flex-shrink: 0;
+        }
+        
+        .sidebar-header {
+            margin-bottom: 2.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--bg-secondary);
+        }
+        
+        .sidebar-header h1 span { color: var(--brand-color); }
+
+        .sidebar-nav ul { list-style: none; }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: var(--text-on-dark);
+            font-weight: 600;
+            transition: background-color 0.2s ease-in-out;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav li a svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+            opacity: 0.7;
+        }
+
+        .sidebar-nav li a:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .sidebar-nav li a.active {
+            background-color: var(--brand-color);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .sidebar-nav li a.active svg { opacity: 1; }
+        
+        .logout-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background-color: var(--danger-color);
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+        .logout-btn:hover { background-color: #991b1b; }
+
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+
+        .main-header { margin-bottom: 2rem; }
+        .main-header h2 { font-size: 2rem; font-weight: 800; }
+        .main-header p { font-size: 1rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .main-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+        }
+
+        .input-column, .output-column { display: flex; flex-direction: column; gap: 2rem; }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card-header h3 { font-size: 1.125rem; font-weight: 700; }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: var(--bg-primary);
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            background-color: var(--bg-secondary);
+        }
+        
+        textarea { min-height: 100px; resize: vertical; }
+
+        .form-group { margin-bottom: 1.25rem; }
+
+        button.primary-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: var(--brand-color);
+            color: white;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button.primary-btn:hover { background: #4338ca; }
+
+        .output-card { display: flex; flex-direction: column; height: 100%; }
+
+        #outputContainer {
+            flex-grow: 1;
+            position: relative;
+            background-color: var(--bg-primary);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        #outputContainer .placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 1rem;
+        }
+        
+        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--brand-color); animation: spin 1s ease infinite; margin-bottom: 1rem; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .resume-output, .cover-letter-output, .job-listings-output { padding: 1.5rem; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333; font-size: 11pt; background: #fff; height: 100%; overflow-y: auto; }
+        
+        .cover-letter-output { white-space: pre-wrap; }
+        .resume-output h1 { font-size: 24pt; text-align: center; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
+        .resume-output h2 { font-size: 14pt; font-weight: bold; border-bottom: 2px solid #eaeaea; padding-bottom: 5px; margin-top: 25px; text-transform: uppercase; color: #2c3e50; }
+        .resume-output p { margin: 8px 0; }
+        .resume-output ul { padding-left: 20px; margin: 5px 0; }
+        .job-listing { border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; background-color: var(--bg-secondary); transition: box-shadow 0.2s; }
+        .job-listing:hover { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
+        .job-listing-title { font-size: 1.1rem; font-weight: 700; color: var(--brand-color); }
+        .job-score { font-size: 1rem; font-weight: 700; color: #16a34a; background-color: #dcfce7; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+
+    /* Dashboard styles */
+    .dashboard-controls { display:flex; gap:0.75rem; align-items:center; margin-bottom:1rem; }
+    .dashboard-search { flex:1; padding:0.65rem 0.9rem; border-radius:0.5rem; border:1px solid var(--border-color); }
+    .dashboard-filter { padding:0.5rem 0.75rem; border-radius:0.5rem; border:1px solid var(--border-color); background:var(--bg-secondary); }
+    .dashboard-list { display:flex; flex-direction:column; gap:0.5rem; }
+    .doc-item { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.75rem 1rem; border-radius:0.5rem; background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%); border:1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(16,24,40,0.03); }
+    .doc-meta { display:flex; flex-direction:column; gap:0.25rem; }
+    .doc-title { font-weight:700; color:var(--text-primary); }
+    .doc-created { font-size:0.85rem; color:var(--text-secondary); }
+    .doc-actions { display:flex; gap:0.5rem; }
+    .btn-ghost { padding:0.5rem 0.75rem; border-radius:0.5rem; border:1px solid var(--border-color); background:transparent; cursor:pointer; display:inline-flex; gap:0.5rem; align-items:center; }
+    .btn-view { color:var(--brand-color); border-color: #e6e6fa; background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%); }
+    .btn-download { color:var(--text-primary); border-color: #eef2ff; background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%); }
+    .btn-delete { color:#dc2626; border-color: #fecaca; background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%); }
+    .btn-delete:hover { color:#b91c1c; border-color: #fca5a5; background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%); box-shadow: 0 6px 20px rgba(220,38,38,0.1); }
+    .btn-ghost svg { width:16px; height:16px; opacity:0.9; }
+    .btn-ghost:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.06); }
+
+    /* Interview Preparation Modal Styles */
+    .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
+    .modal-content { background-color: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+    .modal-header h3 { margin: 0; color: var(--text-primary); font-size: 1.25rem; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); padding: 0.25rem; }
+    .modal-close:hover { color: var(--text-primary); }
+    .modal-body { padding: 1.5rem; }
+    
+    /* Interview Content Styles */
+    .interview-section { margin-bottom: 2rem; }
+    .interview-section h4 { color: var(--brand-color); margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600; }
+    .question-item { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
+    .question { font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
+    .answer { color: var(--text-secondary); line-height: 1.6; }
+    .interview-tips { background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
+    .interview-tips h5 { color: #0369a1; margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600; }
+    .interview-tips ul { margin: 0; padding-left: 1.5rem; }
+    .interview-tips li { color: #0369a1; margin-bottom: 0.25rem; }
+
+    /* Deadline Status Styles */
+    .deadline-container { display: flex; flex-direction: column; gap: 0.25rem; }
+    .deadline-date { font-size: 0.875rem; color: var(--text-primary); }
+    .deadline-status { 
+        font-size: 0.75rem; 
+        font-weight: 600; 
+        padding: 0.125rem 0.5rem; 
+        border-radius: 0.375rem; 
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    .deadline-overdue { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .deadline-today { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+    .deadline-tomorrow { background: #fef3c7; color: #ea580c; border: 1px solid #fed7aa; }
+    .deadline-soon { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .deadline-normal { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+        .upload-toggle { display: flex; border: 1px solid var(--border-color); border-radius: 0.625rem; margin-bottom: 1.5rem; }
+        .toggle-btn { flex-grow: 1; padding: 0.75rem; text-align: center; background: none; border: none; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 0.5rem; transition: all 0.2s; }
+        .toggle-btn.active { background-color: var(--brand-color-light); color: var(--brand-color); }
+        .file-upload-wrapper { border: 2px dashed var(--border-color); border-radius: 0.75rem; padding: 2rem; text-align: center; cursor: pointer; position: relative; }
+        .file-upload-wrapper input[type="file"] { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
+        #fileName { margin-top: 1rem; font-weight: 500; color: var(--brand-color); }
+
+        #AppTracker .card { width: 100%; }
+        .app-table-wrapper { overflow-x: auto; }
+        .app-table { width: 100%; border-collapse: collapse; }
+        .app-table th, .app-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .app-table th { background-color: var(--bg-primary); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
+        .app-table td { font-size: 0.9rem; }
+        .app-table td:nth-child(7) { max-width: 300px; word-wrap: break-word; line-height: 1.4; } /* Job Description column */
+        .job-description-cell { 
+            max-height: 60px; 
+            overflow: hidden; 
+            position: relative; 
+            cursor: pointer;
+            padding: 4px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .job-description-cell:hover { 
+            background-color: #f8fafc; 
+            border-radius: 4px; 
+            padding: 4px 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .job-description-cell::after {
+            content: '👁️';
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+        .job-description-cell:hover::after {
+            opacity: 1;
+        }
+        .app-table td:nth-child(8) { max-width: 120px; } /* Job URL column */
+        .actions-cell button { margin-right: 5px; padding: 4px 8px; font-size: 0.8rem; border-radius: 0.375rem; cursor: pointer; border: 1px solid transparent; }
+        .edit-btn { border-color: #fbbf24; color: #d97706; background-color: #fefce8; }
+        .delete-btn { border-color: #f87171; color: #b91c1c; background-color: #fee2e2; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
+        .modal-content { background: white; padding: 2rem; border-radius: 1rem; width: 90%; max-width: 600px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; flex-direction: column; align-items: stretch; padding: 1rem; order: 2; }
+            .sidebar-header { margin: 0; text-align: center; margin-bottom: 1rem;}
+            .sidebar-nav ul { display: flex; gap: 0.5rem; justify-content: center; }
+            .sidebar-nav li a { padding: 0.5rem; margin: 0; }
+            .sidebar-nav li a span { display: none; }
+            .sidebar-nav li a svg { width: 24px; height: 24px; }
+            .main-content { padding: 1.5rem; }
+            .main-grid { grid-template-columns: 1fr; }
+            .output-column { margin-top: 2rem; }
+        }
+
+        .tab-content { display: none; }
+        .output-footer { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .secondary-btn { flex-grow: 1; padding: 0.75rem 1rem; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
+        .secondary-btn:hover { background-color: #f1f5f9; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div>
+            <div class="sidebar-header"><h1>JobSearch <span>Micro-SaaS</span></h1></div>
+            <ul class="sidebar-nav">
+                <li><a href="#" class="nav-link active" onclick="openTab(event, 'Resume')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                    <span>Resume Generator</span>
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="openTab(event, 'CoverLetter')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                    <span>Cover Letter</span>
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="openTab(event, 'JobMatcher')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                    <span>Job Matcher</span>
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="openTab(event, 'AppTracker')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" /></svg>
+                    <span>Application Tracker</span>
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="openTab(event, 'Account')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    <span>Account</span>
+                </a></li>
+                <li><a href="#" class="nav-link" onclick="openTab(event, 'Dashboard')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13h8V3H3v10zm10 8h8v-6h-8v6zM3 21h8v-6H3v6zm10-18v6h8V3h-8z"/></svg>
+                    <span>Dashboard</span>
+                </a></li>
+                <!-- <li><a href="/account" class="nav-link" id="account-nav-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span>Account</span>
+                </a></li> -->
+            </ul>
+        </div>
+        <div>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="main-header">
+            <h2 id="main-title">Resume Generator</h2>
+            <p id="main-subtitle">Create a professional resume tailored to your profile.</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="input-column">
+                
+                <div id="Resume" class="tab-content" style="display: block;">
+                    <div class="card">
+                        <div class="upload-toggle">
+                            <button class="toggle-btn active" id="formToggle">Enter Details</button>
+                            <button class="toggle-btn" id="uploadToggle">Upload PDF</button>
+                        </div>
+                        <div id="profileFormContainer">
+                            <form id="profileForm">
+                                <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" required value="Jane Doe"></div>
+                                <div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" required value="jane.doe@example.com"></div>
+                                <div class="form-group"><label for="phone">Phone</label><input type="text" id="phone" name="phone" value="123-456-7890"></div>
+                                <div class="form-group"><label for="experience">Work Experience</label><textarea id="experience" name="experience" required>Senior Python Developer at Tech Solutions Inc (2020-Present). Led a team to develop a new data processing pipeline, reducing processing time by 40%.</textarea></div>
+                                <div class="form-group"><label for="skills">Skills</label><textarea id="skills" name="skills" required>Python, FastAPI, Docker, Kubernetes, AWS, PostgreSQL, JavaScript, React</textarea></div>
+                                <div class="form-group"><label for="education">Education</label><textarea id="education" name="education" required>B.S. in Computer Science, State University (2016-2020)</textarea></div>
+                                <div class="form-group"><label for="summary">Professional Summary</label><textarea id="summary" name="summary">A highly motivated software developer with 5+ years of experience.</textarea></div>
+                                <div class="form-group"><label for="projects">Projects</label><textarea id="projects" name="projects">Personal portfolio website built with React and FastAPI.</textarea></div>
+                                <button type="submit" class="primary-btn">Generate Resume</button>
+                            </form>
+                        </div>
+                        <div id="uploadFormContainer" style="display: none;">
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="resumeFile" name="resumeFile" accept=".pdf">
+                                <p><strong>Click to upload</strong> or drag and drop a PDF file.</p>
+                            </div>
+                            <div id="fileName"></div>
+                             <div id="modificationZone" style="display: none; margin-top: 1.5rem;">
+                                <form id="modificationForm">
+                                    <div class="form-group"><label for="jobTitle">Target Job Title</label><input type="text" id="jobTitle" name="jobTitle" required placeholder="e.g., Senior Backend Engineer"></div>
+                                    <div class="form-group"><label for="keySkills">Key Skills to Highlight</label><input type="text" id="keySkills" name="keySkills" required placeholder="e.g., Go, Kafka, Microservices"></div>
+                                    <button type="submit" class="primary-btn">Apply Modifications & Regenerate</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Tab (Client-rendered) -->
+                <div id="Dashboard" class="tab-content">
+                    <div class="card">
+                        <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+                            <div>
+                                <h3 style="margin:0">My Dashboard</h3>
+                                <p style="margin:0; color:var(--text-secondary); font-size:0.95rem">Your recent resumes and cover letters.</p>
+                            </div>
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <input id="dashboardSearch" class="dashboard-search" placeholder="Search documents by title or type..." />
+                                <select id="dashboardFilter" class="dashboard-filter">
+                                    <option value="all">All</option>
+                                    <option value="resume">Resumes</option>
+                                    <option value="cover_letter">Cover Letters</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="dashboard-listings" class="dashboard-list" aria-live="polite">
+                                <p style="color:#6b7280;">Loading your documents...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Tab -->
+                <div id="Account" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>My Account</h3>
+                            <p style="margin:0; color:var(--text-secondary); font-size:0.95rem">View your sign-up information and manage your profile settings.</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Sign-up Information Display Section -->
+                            <div id="signupInfoSection" style="margin-bottom: 2rem;">
+                                <h4 style="margin: 0 0 1.5rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                    Your Sign-up Information
+                                </h4>
+                                
+                                <!-- Profile Header with Avatar -->
+                                <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 0.75rem; border: 1px solid var(--border-color);">
+                                    <div style="position: relative;">
+                                        <img id="signupAvatar" src="/placeholder-avatar.png" alt="Profile Picture" 
+                                             style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                        <div style="position: absolute; bottom: 0; right: 0; background: #16a34a; color: white; padding: 0.25rem 0.5rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;">
+                                            ✓ Uploaded
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h2 id="signupDisplayName" style="margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700; color: var(--text-primary);">Loading...</h2>
+                                        <p id="signupDisplayEmail" style="margin: 0 0 0.25rem 0; color: var(--text-secondary); font-size: 1rem;">Loading...</p>
+                                        <p id="signupDisplayUsername" style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">@Loading...</p>
+                                        <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                                            <div style="background: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                                                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Sign-up Date</div>
+                                                <div id="signupDate" style="font-weight: 600; color: var(--text-primary);">-</div>
+                                            </div>
+                                            <div style="background: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                                                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Status</div>
+                                                <div id="signupStatus" style="font-weight: 600; color: #16a34a;">Signed Up</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sign-up Information Grid -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                    <!-- Personal Details -->
+                                    <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color);">
+                                        <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                            </svg>
+                                            Personal Details
+                                        </h5>
+                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Full Name</div>
+                                                <div id="signupName" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem;">-</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Username</div>
+                                                <div id="signupUsername" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem;">-</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Date of Birth</div>
+                                                <div id="signupDob" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem;">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Professional Information -->
+                                    <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color);">
+                                        <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            </svg>
+                                            Professional Information
+                                        </h5>
+                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Skills</div>
+                                                <div id="signupSkills" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem; min-height: 40px;">-</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Experience</div>
+                                                <div id="signupExperience" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem; min-height: 40px;">-</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Education</div>
+                                                <div id="signupEducation" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem; min-height: 40px;">-</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Projects</div>
+                                                <div id="signupProjects" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem; min-height: 40px;">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color);">
+                                        <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                            </svg>
+                                            Contact & Security
+                                        </h5>
+                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Email Address</div>
+                                                <div id="signupEmail" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem;">-</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Phone Number</div>
+                                                <div id="signupPhone" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem;">-</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Password</div>
+                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                    <div id="signupPassword" style="font-weight: 500; color: var(--text-primary); padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem; font-family: monospace; flex: 1;">••••••••</div>
+                                                    <button type="button" id="togglePasswordBtn" style="padding: 0.5rem; background: var(--brand-color); color: white; border: none; border-radius: 0.375rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                        <svg id="passwordToggleIcon" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Account Update Section -->
+                            <div id="accountUpdateSection" style="padding-top: 2rem; border-top: 2px solid var(--border-color);">
+                                <h4 style="margin: 0 0 1.5rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                    Update Your Account
+                                </h4>
+
+                                <!-- Profile Update Form -->
+                                <form id="profileUpdateForm">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                        <!-- Personal Information -->
+                                        <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color);">
+                                            <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                </svg>
+                                                Update Personal Info
+                                            </h5>
+                                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                                <div>
+                                                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Full Name</label>
+                                                    <input type="text" id="accountName" name="name" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;">
+                                                </div>
+                                                <div>
+                                                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Username</label>
+                                                    <input type="text" id="accountUsername" name="username" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;">
+                                                </div>
+                                                <div>
+                                                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Date of Birth</label>
+                                                    <input type="date" id="accountDob" name="date_of_birth" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Contact Information -->
+                                        <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color);">
+                                            <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                                </svg>
+                                                Update Contact Info
+                                            </h5>
+                                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                                <div>
+                                                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Email Address</label>
+                                                    <input type="email" id="accountEmail" name="email" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;">
+                                                </div>
+                                                <div>
+                                                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Phone Number</label>
+                                                    <input type="tel" id="accountPhone" name="phone" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                                        <button type="submit" form="profileUpdateForm" class="primary-btn" style="padding: 0.75rem 2rem;">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                            </svg>
+                                            Update Profile
+                                        </button>
+                                        <button type="button" id="resetProfileBtn" class="secondary-btn" style="padding: 0.75rem 2rem;">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                            </svg>
+                                            Reset Changes
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <!-- Profile Picture Update Section -->
+                                <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color); margin-bottom: 2rem;">
+                                    <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                        </svg>
+                                        Update Profile Picture
+                                    </h5>
+                                    <div style="display: flex; align-items: center; gap: 2rem;">
+                                        <div style="position: relative;">
+                                            <img id="updateAvatarPreview" src="/placeholder-avatar.png" alt="Current Profile Picture" 
+                                                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-color);">
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div style="margin-bottom: 1rem;">
+                                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">Choose New Profile Picture</label>
+                                                <input type="file" id="avatarUploadInput" accept="image/*" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 0.875rem;">
+                                            </div>
+                                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                                Supported formats: JPG, PNG, GIF. Max size: 5MB
+                                            </div>
+                                            <button type="button" id="updateAvatarBtn" class="primary-btn" style="padding: 0.5rem 1.5rem; font-size: 0.875rem;" disabled>
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                                </svg>
+                                                Update Picture
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Profile Information -->
+                                <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color); margin-bottom: 2rem;">
+                                    <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                        Professional Information
+                                    </h5>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div>
+                                            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Skills</label>
+                                            <textarea id="accountSkills" name="default_skills" placeholder="Enter your skills separated by commas" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem; min-height: 80px; resize: vertical;"></textarea>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Experience</label>
+                                            <textarea id="accountExperience" name="default_experience" placeholder="Describe your work experience" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem; min-height: 80px; resize: vertical;"></textarea>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Education</label>
+                                            <textarea id="accountEducation" name="default_education" placeholder="Enter your educational background" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem; min-height: 80px; resize: vertical;"></textarea>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Projects</label>
+                                            <textarea id="accountProjects" name="default_projects" placeholder="Describe your notable projects" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem; min-height: 80px; resize: vertical;"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border-color); margin-bottom: 2rem;">
+                                    <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                        </svg>
+                                        Change Password
+                                    </h5>
+                                    <form id="passwordChangeForm">
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                            <div>
+                                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Current Password</label>
+                                                <input type="password" id="currentPassword" name="current_password" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;" required>
+                                            </div>
+                                            <div>
+                                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">New Password</label>
+                                                <input type="password" id="newPassword" name="new_password" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;" required minlength="6">
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Confirm New Password</label>
+                                            <input type="password" id="confirmNewPassword" name="confirm_password" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;" required minlength="6">
+                                        </div>
+                                        <button type="submit" class="primary-btn" style="padding: 0.75rem 2rem;">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                            </svg>
+                                            Change Password
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Status Messages -->
+                            <div id="accountStatusMessage" style="margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="CoverLetter" class="tab-content">
+                    <div class="card">
+                        <div class="card-header"><h3>Cover Letter Details</h3></div>
+                        <form id="coverLetterForm">
+                            <div class="form-group"><label for="clJobDescription">Target Job Description</label><textarea id="clJobDescription" name="job_description" required></textarea></div>
+                            <div class="form-group"><label for="clCompanyName">Company Name</label><input type="text" id="clCompanyName" name="company_name" required></div>
+                            <div class="form-group"><label for="clHiringManager">Hiring Manager's Name (Optional)</label><input type="text" id="clHiringManager" name="hiring_manager"></div>
+                            <div class="form-group"><label for="clPersonalNote">Personal Note (Optional)</label><textarea id="clPersonalNote" name="personal_note"></textarea></div>
+                            <button type="submit" class="primary-btn">Generate Cover Letter</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="JobMatcher" class="tab-content">
+                    <div class="card">
+                        <div class="card-header"><h3>Find Your Next Job</h3></div>
+                        <form id="jobMatchForm">
+                            <div class="form-group"><label for="jmQuery">Job Title / Keyword</label><input type="text" id="jmQuery" name="query" required value="Python Developer"></div>
+                            <div class="form-group"><label for="jmLocation">Location</label><input type="text" id="jmLocation" name="location" required value="London"></div>
+                            <button type="submit" class="primary-btn">Find Matching Jobs</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="AppTracker" class="tab-content">
+                     <div class="card">
+                         <div class="app-table-wrapper">
+                             <table class="app-table">
+                                 <thead>
+                                     <tr>
+                                        <th>Job Title</th> <th>Company</th> <th>Location</th> <th>Salary Range</th> <th>Application Status</th> <th>Job Type</th> <th>Job Description</th> <th>Job URL</th> <th>Applied On</th>
+                                        <th>Deadline</th> <th class="actions-cell">Actions</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody id="application-list-body"></tbody>
+                             </table>
+                         </div>
+                    </div>
+                </div>
+            </div> 
+            
+            <div class="output-column">
+                <div class="card output-card">
+                    <div class="card-header"><h3>Generated Output</h3></div>
+                    <div id="outputContainer">
+                        <div class="placeholder"><p>Your AI-crafted document will appear here.</p></div>
+                    </div>
+                    <div class="output-footer" id="output-footer" style="display: none;">
+                         <button id="backToJobsBtn" class="secondary-btn" style="display: none;">← Back to Job Listings</button>
+                         <button id="downloadBtn" class="secondary-btn" style="display: none;">Download PDF</button>
+                         <button id="downloadTxtBtn" class="secondary-btn" style="display: none;">Download .txt</button>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </main>
+
+    <div id="applyModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h3>Apply for <span id="modalJobTitle"></span></h3>
+            <p>at <span id="modalJobCompany"></span></p>
+            <div class="modal-section"><label for="modalResumeText">Your Resume (Plain Text)</label><textarea id="modalResumeText" readonly></textarea></div>
+            <div class="modal-section"><label for="modalCoverLetterText">Your Cover Letter</label><textarea id="modalCoverLetterText" readonly></textarea></div>
+            <a href="#" id="proceedToAppBtn" target="_blank" class="primary-btn">Proceed to Application</a>
+        </div>
+    </div>
+
+    <div id="editApplicationModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h3>Edit Application</h3>
+            <form id="editApplicationForm">
+                <input type="hidden" id="editAppId">
+                <div class="form-group"><label for="editJobTitle">Job Title</label><input type="text" id="editJobTitle" required></div>
+                <div class="form-group"><label for="editCompany">Company</label><input type="text" id="editCompany" required></div>
+                <div class="form-group"><label for="editLocation">Location</label><input type="text" id="editLocation"></div>
+                <div class="form-group"><label for="editSalaryRange">Salary Range</label><input type="text" id="editSalaryRange"></div>
+                <div class="form-group"><label for="editJobType">Job Type</label>
+                    <select id="editJobType">
+                        <option value="onsite">On-site</option>
+                        <option value="remote">Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="editApplicationStatus">Application Status</label>
+                    <select id="editApplicationStatus" required>
+                        <option value="applied">Applied</option>
+                        <option value="calling_interview">Calling Interview</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="offering_offered">Offering/Offered</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="editApplicationDate">Application Date</label><input type="date" id="editApplicationDate"></div>
+                <div class="form-group"><label for="editDeadline">Deadline</label><input type="date" id="editDeadline"></div>
+                <div class="form-group"><label for="editJobDescription">Job Description</label><textarea id="editJobDescription"></textarea></div>
+                <div class="form-group"><label for="editJobUrl">Job URL</label><input type="url" id="editJobUrl"></div>
+                <button type="submit" class="primary-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Job Description Modal -->
+    <div id="jobDescriptionModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px;">
+            <button class="modal-close-btn">&times;</button>
+            <h3>Job Description</h3>
+            <div class="job-description-full">
+                <div id="fullJobDescription" style="white-space: pre-wrap; line-height: 1.6; max-height: 400px; overflow-y: auto; padding: 1rem; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Preparation Modal -->
+    <div id="interviewPrepModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 id="interviewModalTitle">Interview Preparation</h3>
+                <button class="modal-close" onclick="closeInterviewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="interviewContent">
+                    <!-- Interview content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        let extractedPdfText = '', currentResumeData = null, currentJobsData = [], currentCoverLetterText = '', currentApplications = [];
+
+    // DOM Elements
+    let outputContainer = document.getElementById('outputContainer');
+    let outputFooter = document.getElementById('output-footer');
+    const mainGrid = document.querySelector('.main-grid');
+    let outputColumn = document.querySelector('.output-column');
+        const mainTitle = document.getElementById('main-title');
+        const mainSubtitle = document.getElementById('main-subtitle');
+        const modificationZone = document.getElementById('modificationZone');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadTxtBtn = document.getElementById('downloadTxtBtn');
+        const backToJobsBtn = document.getElementById('backToJobsBtn');
+
+    // (output elements are present in the DOM) - no placeholder creation needed
+
+        // Helper to handle API requests and unauthorized responses
+        async function fetchWithAuth(url, options = {}) {
+            const authToken = localStorage.getItem('supabase_token');
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${authToken}`
+            };
+            
+            const response = await fetch(url, { ...options, headers });
+
+            if (response.status === 401) {
+                // Token is invalid or expired, log the user out
+                localStorage.removeItem('supabase_token');
+                window.location.href = 'auth.html';
+                // Throw an error to stop further execution in the calling function
+                throw new Error('Unauthorized');
+            }
+            return response;
+        }
+
+
+        const pageInfo = {
+            'Resume': { title: 'Resume Generator', subtitle: 'Create a professional resume tailored to your profile.' },
+            'CoverLetter': { title: 'Cover Letter Generator', subtitle: 'Generate a personalized cover letter for any job.' },
+            'JobMatcher': { title: 'Job Matcher', subtitle: 'Find jobs that match your skills and experience.' },
+            'AppTracker': { title: 'Application Tracker', subtitle: 'Keep track of every job you\'ve applied for.' },
+            'Account': { title: 'My Account', subtitle: 'Manage your profile information and settings.' },
+            'Dashboard': { title: 'My Dashboard', subtitle: 'Your recent resumes and cover letters.' }
+        };
+
+        function openTab(evt, tabName) {
+            if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+            document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+            document.querySelectorAll(".nav-link").forEach(tl => tl.classList.remove("active"));
+            
+            const targetContent = document.getElementById(tabName);
+            if (targetContent) targetContent.style.display = 'block';
+            
+            if (evt && evt.currentTarget) evt.currentTarget.classList.add("active");
+            
+            // If no event, find and activate the correct nav link
+            if (!evt) {
+                const navLinks = document.querySelectorAll(".nav-link");
+                navLinks.forEach(link => {
+                    if (link.onclick && link.onclick.toString().includes(`'${tabName}'`)) {
+                        link.classList.add("active");
+                    }
+                });
+            }
+
+            mainTitle.textContent = pageInfo[tabName].title;
+            mainSubtitle.textContent = pageInfo[tabName].subtitle;
+
+            if (tabName === 'AppTracker') {
+                loadApplications();
+                mainGrid.style.gridTemplateColumns = '1fr';
+                outputColumn.style.display = 'none';
+            } else if (tabName === 'Dashboard') {
+                // Dashboard should use the full width and not show the generated output column
+                loadDashboardDocuments();
+                mainGrid.style.gridTemplateColumns = '1fr';
+                outputColumn.style.display = 'none';
+            } else if (tabName === 'Account') {
+                // Account should use full width and not show the generated output column
+                mainGrid.style.gridTemplateColumns = '1fr';
+                outputColumn.style.display = 'none';
+                // Load account information
+                loadAccountInfo();
+            } else {
+                mainGrid.style.gridTemplateColumns = '';
+                mainGrid.style.display = 'grid'; // Ensure grid is visible
+                outputColumn.style.display = 'flex';
+                resetOutputState();
+            }
+        }
+
+        function resetOutputState() {
+            outputContainer.innerHTML = `<div class="placeholder"><p>Your AI-crafted document will appear here.</p></div>`;
+            outputFooter.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            downloadTxtBtn.style.display = 'none';
+            backToJobsBtn.style.display = 'none';
+        }
+
+        function showLoading(message = "Generating, please wait...") {
+            outputContainer.innerHTML = `<div class="placeholder"><div class="spinner"></div><p>${message}</p></div>`;
+            outputFooter.style.display = 'none';
+        }
+        
+        function showError(message) {
+            outputContainer.innerHTML = `<div class="placeholder"><p style="color: #dc2626;"><strong>Error:</strong> ${message}</p></div>`;
+        }
+
+        // View a document PDF in a new tab (fetch with auth, create blob URL)
+        async function viewDocumentPdf(docId) {
+            try {
+                console.log(`Attempting to view PDF for document: ${docId}`);
+                const response = await fetchWithAuth(`${API_BASE_URL}/documents/${docId}/pdf`);
+                console.log(`PDF response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('PDF fetch error:', errorText);
+                    throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                console.log(`PDF blob size: ${blob.size} bytes`);
+                
+                if (blob.size === 0) {
+                    throw new Error('PDF file is empty');
+                }
+                
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                // optional: revoke after some time
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            } catch (err) {
+                console.error('Error viewing PDF:', err);
+                showError(err.message || 'Failed to open document');
+            }
+        }
+
+        // Download PDF for a document
+        async function downloadDocumentPdf(docId) {
+            try {
+                console.log(`Attempting to download PDF for document: ${docId}`);
+                const response = await fetchWithAuth(`${API_BASE_URL}/documents/${docId}/pdf`);
+                console.log(`PDF response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('PDF fetch error:', errorText);
+                    throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                console.log(`PDF blob size: ${blob.size} bytes`);
+                
+                if (blob.size === 0) {
+                    throw new Error('PDF file is empty');
+                }
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `document_${docId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error('Error downloading PDF:', err);
+                showError(err.message || 'Failed to download document');
+            }
+        }
+
+        function getProfileAsText() {
+            const formData = new FormData(document.getElementById('profileForm'));
+            let text = '';
+            for (let [key, value] of formData.entries()) {
+                if (value) text += `${key.charAt(0).toUpperCase() + key.slice(1)}:\n${value}\n\n`;
+            }
+            return text;
+        }
+
+        function convertResumeJsonToText(data) {
+            if (!data) return "Please generate a resume first.";
+            let text = "";
+            text += `${data.name}\n${data.email} | ${data.phone}\n\n`;
+            text += `PROFESSIONAL SUMMARY\n${'-'.repeat(20)}\n${data.summary}\n\n`;
+            if (data.experience && data.experience.length) {
+                text += `WORK EXPERIENCE\n${'-'.repeat(20)}\n`;
+                data.experience.forEach(job => {
+                    text += `${job.title.toUpperCase()} at ${job.company.toUpperCase()} (${job.dates})\n`;
+                    job.bullets.forEach(b => text += `  - ${b}\n`);
+                    text += '\n';
+                });
+            }
+            if (data.projects && data.projects.length) {
+                text += `PROJECTS\n${'-'.repeat(20)}\n`;
+                data.projects.forEach(p => {
+                    text += `${p.title.toUpperCase()}\n`;
+                    p.bullets.forEach(b => text += `  - ${b}\n`);
+                    text += '\n';
+                });
+            }
+            text += `EDUCATION\n${'-'.repeat(20)}\n${data.education}\n\n`;
+            if (data.skills && data.skills.length) {
+                text += `SKILLS\n${'-'.repeat(20)}\n${data.skills.join(', ')}\n`;
+            }
+            return text;
+        }
+
+        function displayOutput(data, type) {
+            outputContainer.innerHTML = '';
+            outputFooter.style.display = 'flex';
+            downloadBtn.style.display = 'block';
+            downloadTxtBtn.style.display = 'block';
+
+            if (type === 'resume') {
+                currentResumeData = data;
+                currentCoverLetterText = '';
+                const resumeDiv = document.createElement('div');
+                resumeDiv.className = 'resume-output';
+                let html = `<h1>${(data.name || 'Your Name').toUpperCase()}</h1><p class="contact-info">${data.email || ''} | ${data.phone || ''}</p>`;
+                if (data.summary) html += `<div><h2>Professional Summary</h2><p>${data.summary}</p></div>`;
+                if (data.experience && data.experience.length) html += `<div><h2>Work Experience</h2>${data.experience.map(job => `<div class="experience-item"><p class="job-title">${job.title} at ${job.company}</p><p><i>${job.dates}</i></p><ul>${job.bullets.map(b => `<li>${b}</li>`).join('')}</ul></div>`).join('')}</div>`;
+                if (data.projects && data.projects.length) html += `<div><h2>Projects</h2>${data.projects.map(p => `<div class="project-item"><p class="project-title">${p.title}</p><ul>${p.bullets.map(b => `<li>${b}</li>`).join('')}</ul></div>`).join('')}</div>`;
+                if (data.education) html += `<div><h2>Education</h2><p>${data.education}</p></div>`;
+                if (data.skills && data.skills.length) html += `<div><h2>Skills</h2><p>${data.skills.join(' &bull; ')}</p></div>`;
+                resumeDiv.innerHTML = html;
+                outputContainer.appendChild(resumeDiv);
+            } else { 
+                currentCoverLetterText = data.cover_letter_text;
+                const clDiv = document.createElement('div');
+                clDiv.className = 'cover-letter-output';
+                clDiv.textContent = data.cover_letter_text;
+                outputContainer.appendChild(clDiv);
+            }
+        }
+
+        // Load account information and populate forms
+        async function loadAccountInfo() {
+            try {
+                // First, try to load saved sign-up information from localStorage
+                let signupProfile = null;
+                try {
+                    const savedProfile = localStorage.getItem('saved_signup_profile');
+                    if (savedProfile) {
+                        signupProfile = JSON.parse(savedProfile);
+                    }
+                } catch (e) {
+                    console.log('No saved signup profile found');
+                }
+
+                // Display sign-up information
+                if (signupProfile) {
+                    displaySignupInfo(signupProfile);
+                } else {
+                    displaySignupInfo({});
+                }
+
+                // Try to load profile from server if user is logged in
+                const token = localStorage.getItem('supabase_token');
+                if (token) {
+                    try {
+                        const resp = await fetchWithAuth(`${API_BASE_URL}/profile`);
+                        if (resp.ok) {
+                            const profile = await resp.json();
+                            populateUpdateForms(profile);
+                        }
+                    } catch (err) {
+                        console.log('User not logged in or profile not found');
+                    }
+                }
+
+            } catch (err) {
+                console.error('Failed to load account info:', err);
+                showAccountMessage('Failed to load account information. Please try again.', 'error');
+            }
+        }
+
+        // Display sign-up information
+        function displaySignupInfo(profile) {
+            // Populate sign-up display fields
+            document.getElementById('signupDisplayName').textContent = profile.name || 'User';
+            document.getElementById('signupDisplayEmail').textContent = profile.email || '';
+            document.getElementById('signupDisplayUsername').textContent = profile.username ? `@${profile.username}` : '@username';
+            document.getElementById('signupDate').textContent = profile.created_at ? new Date(profile.created_at).toLocaleDateString() : new Date().toLocaleDateString();
+
+            // Populate sign-up information grid
+            document.getElementById('signupName').textContent = profile.name || '-';
+            document.getElementById('signupUsername').textContent = profile.username || '-';
+            document.getElementById('signupDob').textContent = profile.dob || profile.date_of_birth || '-';
+            document.getElementById('signupEmail').textContent = profile.email || '-';
+            document.getElementById('signupPhone').textContent = profile.phone || '-';
+
+            // Populate professional information
+            document.getElementById('signupSkills').textContent = profile.default_skills || '-';
+            document.getElementById('signupExperience').textContent = profile.default_experience || '-';
+            document.getElementById('signupEducation').textContent = profile.default_education || '-';
+            document.getElementById('signupProjects').textContent = profile.default_projects || '-';
+
+            // Store the actual password for toggle functionality
+            window.signupPassword = profile.password || '-';
+            document.getElementById('signupPassword').textContent = '••••••••';
+
+            // Set avatar image - prioritize the exact uploaded image
+            const avatarEl = document.getElementById('signupAvatar');
+            const updateAvatarEl = document.getElementById('updateAvatarPreview');
+            
+            if (profile.avatar_base64) {
+                // Use the exact uploaded image from sign-up
+                avatarEl.src = profile.avatar_base64;
+                updateAvatarEl.src = profile.avatar_base64;
+            } else if (profile.avatar_url) {
+                avatarEl.src = profile.avatar_url;
+                updateAvatarEl.src = profile.avatar_url;
+            } else if (profile.avatar) {
+                avatarEl.src = profile.avatar;
+                updateAvatarEl.src = profile.avatar;
+            } else {
+                // Generate a default avatar based on name
+                const name = profile.name || 'User';
+                const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                const defaultAvatar = `data:image/svg+xml;base64,${btoa(`
+                    <svg width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="120" height="120" fill="#4f46e5"/>
+                        <text x="60" y="70" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="40" font-weight="bold">${initials}</text>
+                    </svg>
+                `)}`;
+                avatarEl.src = defaultAvatar;
+                updateAvatarEl.src = defaultAvatar;
+            }
+        }
+
+        // Populate update forms with profile data
+        function populateUpdateForms(profile) {
+            // Populate profile form fields for updates
+            document.getElementById('accountName').value = profile.name || profile.full_name || '';
+            document.getElementById('accountUsername').value = profile.username || '';
+            document.getElementById('accountEmail').value = profile.email || '';
+            document.getElementById('accountPhone').value = profile.phone || '';
+            document.getElementById('accountDob').value = profile.date_of_birth || profile.dob || '';
+            
+            // Populate professional information fields
+            document.getElementById('accountSkills').value = profile.default_skills || '';
+            document.getElementById('accountExperience').value = profile.default_experience || '';
+            document.getElementById('accountEducation').value = profile.default_education || '';
+            document.getElementById('accountProjects').value = profile.default_projects || '';
+        }
+
+        // Show account status messages
+        function showAccountMessage(message, type = 'success') {
+            const messageEl = document.getElementById('accountStatusMessage');
+            messageEl.textContent = message;
+            messageEl.style.display = 'block';
+            messageEl.style.backgroundColor = type === 'error' ? '#fee2e2' : '#dcfce7';
+            messageEl.style.color = type === 'error' ? '#b91c1c' : '#166534';
+            messageEl.style.border = `1px solid ${type === 'error' ? '#fecaca' : '#bbf7d0'}`;
+            
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Inline toast for Application Tracker notifications
+        function showTrackerToast(message, type = 'success') {
+            let el = document.getElementById('trackerToast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'trackerToast';
+                el.style.position = 'fixed';
+                el.style.top = '20px';
+                el.style.right = '20px';
+                el.style.zIndex = '9999';
+                el.style.padding = '10px 14px';
+                el.style.borderRadius = '8px';
+                el.style.boxShadow = 'var(--shadow-md)';
+                document.body.appendChild(el);
+            }
+            el.textContent = message;
+            el.style.background = type === 'error' ? '#fee2e2' : '#dcfce7';
+            el.style.color = type === 'error' ? '#b91c1c' : '#166534';
+            el.style.border = `1px solid ${type === 'error' ? '#fecaca' : '#bbf7d0'}`;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+        
+        function displayJobMatches(jobs) {
+            // Ensure jobs is an array
+            if (!Array.isArray(jobs)) {
+                console.error('Expected jobs to be an array, got:', typeof jobs, jobs);
+                showError('Invalid job data received from server.');
+                return;
+            }
+            
+            currentJobsData = jobs;
+            outputContainer.innerHTML = "";
+            outputFooter.style.display = 'none';
+            const jobsDiv = document.createElement('div');
+            jobsDiv.className = 'job-listings-output';
+            if (jobs.length === 0) {
+                jobsDiv.innerHTML = '<div class="placeholder"><p>No jobs found. Try a different query or location.</p></div>';
+            } else {
+                jobs.forEach((job, index) => {
+                    jobsDiv.innerHTML += `
+                        <div class="job-listing">
+                            <div class="job-listing-header">
+                                <div><h4 class="job-listing-title">${job.title || 'N/A'}</h4><p>${job.company || 'N/A'}</p><p>${job.location || 'N/A'}</p></div>
+                                <div class="job-score">${Math.round((job.score || 0) * 100)}%</div>
+                            </div>
+                            <div class="job-listing-footer">
+                                <a href="${job.url || '#'}" target="_blank" class="secondary-btn job-listing-btn view-job-btn" data-job-index="${index}">View Job</a>
+                                <button class="secondary-btn job-listing-btn generate-cl-btn" data-job-index="${index}">Generate CL</button>
+                                <button class="secondary-btn job-listing-btn interview-prep-btn" data-job-index="${index}" data-job-title="${job.title || 'N/A'}" data-job-company="${job.company || 'N/A'}">Interview Prep</button>
+                                <button class="primary-btn job-listing-btn apply-btn" data-job-index="${index}">Apply Now</button>
+                            </div>
+                        </div>`;
+                });
+            }
+            outputContainer.appendChild(jobsDiv);
+        }
+
+        // Load Dashboard documents (resumes and cover letters) and render only generated PDFs
+        async function loadDashboardDocuments() {
+            const container = document.getElementById('dashboard-listings');
+            
+            // Check if user is authenticated
+            const token = localStorage.getItem('supabase_token');
+            if (!token) {
+                container.innerHTML = '<p style="color: #dc2626;">Please log in to view your documents.</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            const loading = document.createElement('p'); loading.style.color = '#6b7280'; loading.textContent = 'Loading your documents...';
+            container.appendChild(loading);
+            try {
+                console.log('Loading documents from:', `${API_BASE_URL}/documents`);
+                console.log('Auth token:', localStorage.getItem('supabase_token') ? 'Present' : 'Missing');
+                
+                const resp = await fetchWithAuth(`${API_BASE_URL}/documents`);
+                console.log('Documents response status:', resp.status);
+                
+                if (!resp.ok) {
+                    const errorText = await resp.text();
+                    console.error('Documents error response:', errorText);
+                    throw new Error(`Failed to load documents: ${errorText}`);
+                }
+                
+                const docs = await resp.json();
+                console.log('Documents loaded:', docs);
+
+                // Normalize doc_type values to 'resume' or 'cover_letter'
+                const normalized = (docs || []).map(d => {
+                    const raw = String(d.doc_type || '').toLowerCase();
+                    let docType = 'other';
+                    if (raw.includes('resume')) docType = 'resume';
+                    else if (raw.includes('cover') || raw.includes('cover_letter') || raw.includes('cover-letter')) docType = 'cover_letter';
+                    return {
+                        id: d.id,
+                        title: d.title || (docType === 'resume' ? 'Untitled Resume' : 'Untitled Cover Letter'),
+                        created_at: d.created_at,
+                        doc_type: docType,
+                        content_json: d.content_json,
+                        content_text: d.content_text
+                    };
+                }).filter(d => d.doc_type !== 'other'); // Only show resume and cover letter documents
+
+                container.innerHTML = '';
+                if (!normalized.length) {
+                    const none = document.createElement('p'); none.style.color = '#6b7280'; none.textContent = 'No generated PDF documents yet.'; container.appendChild(none); return;
+                }
+
+                const list = document.createElement('div'); list.className = 'dashboard-list';
+                // initial render of all
+                normalized.forEach(d => {
+                    const item = document.createElement('div'); item.className = 'doc-item';
+                    const meta = document.createElement('div'); meta.className = 'doc-meta';
+                    const title = document.createElement('div'); title.className = 'doc-title'; title.textContent = d.title;
+                    const created = document.createElement('div'); created.className = 'doc-created'; created.textContent = `Created: ${new Date(d.created_at).toLocaleDateString()} | Type: ${d.doc_type.replace('_', ' ')}`;
+                    meta.appendChild(title); meta.appendChild(created);
+
+                    const actions = document.createElement('div'); actions.className = 'doc-actions';
+                    const viewBtn = document.createElement('button'); viewBtn.className = 'btn-ghost btn-view'; viewBtn.onclick = () => viewDocumentPdf(d.id);
+                    viewBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-weight:600; font-size:0.9rem;">View</span>`;
+                    const dlBtn = document.createElement('button'); dlBtn.className = 'btn-ghost btn-download'; dlBtn.onclick = () => downloadDocumentPdf(d.id);
+                    dlBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 21H3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-weight:600; font-size:0.9rem;">Download</span>`;
+                    const deleteBtn = document.createElement('button'); deleteBtn.className = 'btn-ghost btn-delete'; deleteBtn.onclick = () => deleteDocument(d.id, d.title);
+                    deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11v6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-weight:600; font-size:0.9rem;">Delete</span>`;
+                    actions.appendChild(viewBtn); actions.appendChild(dlBtn); actions.appendChild(deleteBtn);
+
+                    item.appendChild(meta); item.appendChild(actions);
+                    list.appendChild(item);
+                });
+
+                container.appendChild(list);
+
+                const searchInput = document.getElementById('dashboardSearch');
+                const filterSelect = document.getElementById('dashboardFilter');
+                function filterRender() {
+                    const q = (searchInput && searchInput.value || '').toLowerCase().trim();
+                    const filter = filterSelect ? filterSelect.value : 'all';
+                    list.innerHTML = '';
+                    normalized
+                        .filter(d => (filter === 'all' || d.doc_type === filter))
+                        .filter(d => (!q || d.title.toLowerCase().includes(q) || d.doc_type.includes(q)))
+                        .forEach(d => {
+                            const item = document.createElement('div'); item.className = 'doc-item';
+                            const meta = document.createElement('div'); meta.className = 'doc-meta';
+                            const title = document.createElement('div'); title.className = 'doc-title'; title.textContent = d.title;
+                            const created = document.createElement('div'); created.className = 'doc-created'; created.textContent = `Created: ${new Date(d.created_at).toLocaleDateString()} | Type: ${d.doc_type.replace('_', ' ')}`;
+                            meta.appendChild(title); meta.appendChild(created);
+                            const actions = document.createElement('div'); actions.className = 'doc-actions';
+                            const viewBtn = document.createElement('button'); viewBtn.className = 'btn-ghost btn-view'; viewBtn.onclick = () => viewDocumentPdf(d.id);
+                            viewBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-weight:600; font-size:0.9rem;">View</span>`;
+                            const dlBtn = document.createElement('button'); dlBtn.className = 'btn-ghost btn-download'; dlBtn.onclick = () => downloadDocumentPdf(d.id);
+                            dlBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 21H3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-weight:600; font-size:0.9rem;">Download</span>`;
+                            const deleteBtn = document.createElement('button'); deleteBtn.className = 'btn-ghost btn-delete'; deleteBtn.onclick = () => deleteDocument(d.id, d.title);
+                            deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11v6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-weight:600; font-size:0.9rem;">Delete</span>`;
+                            actions.appendChild(viewBtn); actions.appendChild(dlBtn); actions.appendChild(deleteBtn);
+                             item.appendChild(meta); item.appendChild(actions);
+                            list.appendChild(item);
+                        });
+                }
+                if (searchInput) searchInput.addEventListener('input', filterRender);
+                if (filterSelect) filterSelect.addEventListener('change', filterRender);
+                filterRender();
+            } catch (err) {
+                console.error('Error loading dashboard documents:', err);
+                container.innerHTML = '';
+                const errp = document.createElement('p'); errp.style.color = '#dc2626'; errp.textContent = `Failed to load documents: ${err.message}`; container.appendChild(errp);
+            }
+        }
+
+        // Delete document function
+        async function deleteDocument(documentId, documentTitle) {
+            // Show confirmation dialog
+            const confirmed = confirm(`Are you sure you want to delete "${documentTitle}"?\n\nThis action cannot be undone.`);
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/documents/${documentId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Failed to delete document');
+                }
+
+                // Show success message
+                showDashboardMessage(`"${documentTitle}" has been deleted successfully.`, 'success');
+                
+                // Reload the dashboard to reflect changes
+                loadDashboardDocuments();
+                
+            } catch (error) {
+                if (error.message !== 'Unauthorized') {
+                    showDashboardMessage(`Failed to delete document: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Show dashboard status messages
+        function showDashboardMessage(message, type = 'success') {
+            // Create or update message element
+            let messageEl = document.getElementById('dashboardMessage');
+            if (!messageEl) {
+                messageEl = document.createElement('div');
+                messageEl.id = 'dashboardMessage';
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 1rem 1.5rem;
+                    border-radius: 0.5rem;
+                    font-weight: 500;
+                    z-index: 1000;
+                    max-width: 400px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    transition: all 0.3s ease;
+                `;
+                document.body.appendChild(messageEl);
+            }
+
+            // Set message content and styling
+            messageEl.textContent = message;
+            if (type === 'success') {
+                messageEl.style.backgroundColor = '#10b981';
+                messageEl.style.color = 'white';
+                messageEl.style.border = '1px solid #059669';
+            } else {
+                messageEl.style.backgroundColor = '#ef4444';
+                messageEl.style.color = 'white';
+                messageEl.style.border = '1px solid #dc2626';
+            }
+
+            // Show message
+            messageEl.style.display = 'block';
+            messageEl.style.opacity = '1';
+            messageEl.style.transform = 'translateY(0)';
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                messageEl.style.opacity = '0';
+                messageEl.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+
+        async function loadApplications() {
+            const tableBody = document.getElementById('application-list-body');
+            
+            // Check if user is authenticated
+            const token = localStorage.getItem('supabase_token');
+            if (!token) {
+                tableBody.innerHTML = '<tr><td colspan="11" style="color: #dc2626;">Please log in to view your applications.</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = '<tr><td colspan="11">Loading...</td></tr>';
+            try {
+                console.log('Loading applications from:', `${API_BASE_URL}/applications`);
+                console.log('Auth token:', localStorage.getItem('supabase_token') ? 'Present' : 'Missing');
+                
+                const response = await fetchWithAuth(`${API_BASE_URL}/applications`);
+                console.log('Applications response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Applications error response:', errorText);
+                    throw new Error(`Server responded with ${response.status}: ${errorText}`);
+                }
+                
+                currentApplications = await response.json();
+                console.log('Applications loaded:', currentApplications);
+                console.log('Number of applications:', currentApplications.length);
+                renderApplications(currentApplications);
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                if (error.message !== 'Unauthorized') {
+                    tableBody.innerHTML = `<tr><td colspan="11" style="color: #dc2626;">Error: ${error.message}</td></tr>`;
+                }
+            }
+        }
+        
+        function renderApplications(applications) {
+            console.log('Rendering applications:', applications);
+            const tableBody = document.getElementById('application-list-body');
+            if (applications.length === 0) {
+                console.log('No applications to render');
+                tableBody.innerHTML = '<tr><td colspan="11">No applications tracked yet.</td></tr>';
+                return;
+            }
+            console.log('Rendering', applications.length, 'applications');
+            tableBody.innerHTML = applications.map(app => `
+                <tr>
+                    <td>${app.position || 'N/A'}</td>
+                    <td>${app.company}</td>
+                    <td>${app.location || 'N/A'}</td>
+                    <td>${app.salary_range || 'N/A'}</td>
+                    <td>${app.application_status || 'applied'}</td>
+                    <td>${app.job_type || 'onsite'}</td>
+                    <td>${app.job_description ? `<div class="job-description-cell" title="${app.job_description.replace(/"/g, '&quot;')}">${formatJobDescription(app.job_description)}</div>` : 'N/A'}</td>
+                    <td>${app.job_url ? `<a href="${app.job_url}" target="_blank" style="color: #4338ca; text-decoration: underline;">View Job</a>` : 'N/A'}</td>
+                    <td>${app.application_date ? new Date(app.application_date).toLocaleDateString() : 'N/A'}</td>
+                    <td>${app.deadline ? getDeadlineDisplay(app.deadline) : 'N/A'}</td>
+                    <td class="actions-cell">
+                        <button class="edit-btn" data-id="${app.id}">Edit</button>
+                        <button class="delete-btn" data-id="${app.id}">Delete</button>
+                    </td>
+                </tr>`).join('');
+        }
+        
+        function formatJobDescription(description) {
+            if (!description) return 'N/A';
+            
+            // Clean up the description
+            let cleanDesc = description
+                .replace(/Job Description:\s*/gi, '') // Remove "Job Description:" prefix
+                .replace(/\*\s*/g, '• ') // Convert * to bullet points
+                .replace(/\n\s*\n/g, '\n') // Remove extra line breaks
+                .trim();
+            
+            // If description is too long, truncate it intelligently
+            if (cleanDesc.length > 120) {
+                // Try to break at sentence end
+                const truncated = cleanDesc.substring(0, 120);
+                const lastPeriod = truncated.lastIndexOf('.');
+                const lastBullet = truncated.lastIndexOf('•');
+                const breakPoint = Math.max(lastPeriod, lastBullet);
+                
+                if (breakPoint > 80) {
+                    return cleanDesc.substring(0, breakPoint + 1) + '...';
+                } else {
+                    return cleanDesc.substring(0, 120) + '...';
+                }
+            }
+            
+            return cleanDesc;
+        }
+        
+        function getDeadlineDisplay(deadline) {
+            const deadlineDate = new Date(deadline);
+            const today = new Date();
+            const diffTime = deadlineDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let statusClass = '';
+            let statusText = '';
+            
+            if (diffDays < 0) {
+                statusClass = 'deadline-overdue';
+                statusText = 'OVERDUE';
+            } else if (diffDays === 0) {
+                statusClass = 'deadline-today';
+                statusText = 'TODAY';
+            } else if (diffDays === 1) {
+                statusClass = 'deadline-tomorrow';
+                statusText = 'TOMORROW';
+            } else if (diffDays <= 3) {
+                statusClass = 'deadline-soon';
+                statusText = `${diffDays} DAYS`;
+            } else {
+                statusClass = 'deadline-normal';
+                statusText = '';
+            }
+            
+            return `
+                <div class="deadline-container">
+                    <span class="deadline-date">${deadlineDate.toLocaleDateString()}</span>
+                    ${statusText ? `<span class="deadline-status ${statusClass}">${statusText}</span>` : ''}
+                </div>
+            `;
+        }
+        
+        // Test function to manually test application creation
+        async function testApplicationCreation() {
+            const testJobDetails = {
+                title: 'Test Software Engineer',
+                company: 'Test Company Inc',
+                location: 'Test City, Test State',
+                description: 'This is a test job description for testing purposes.',
+                url: 'https://example.com/job/test'
+            };
+            
+            console.log('Testing application creation with:', testJobDetails);
+            await addApplicationToTracker(testJobDetails);
+        }
+        
+        // Make test function available globally for debugging
+        window.testApplicationCreation = testApplicationCreation;
+
+        async function addApplicationToTracker(jobDetails) {
+            const payload = { 
+                position: jobDetails.title, 
+                company: jobDetails.company, 
+                application_status: "applied",  // Only application_status, no status field
+                job_type: "onsite",  // New field - default to onsite
+                application_date: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
+                job_url: jobDetails.url,
+                location: jobDetails.location || 'N/A',
+                job_description: jobDetails.description || 'N/A'
+            };
+            try {
+                console.log('Adding application to tracker:', payload);
+                console.log('Job details:', jobDetails);
+                
+                const response = await fetchWithAuth(`${API_BASE_URL}/applications`, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('Application tracker response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Failed to add application to tracker:", errorText);
+                    console.error("Response status:", response.status);
+                    console.error("Response statusText:", response.statusText);
+                    showTrackerToast(`Failed to save application: ${response.status} ${response.statusText}`);
+                } else {
+                    const result = await response.json();
+                    console.log('Application added successfully:', result);
+                    showTrackerToast('Application saved successfully!');
+                }
+            } catch (error) { 
+                console.error("Error adding application:", error);
+                if (error.message !== 'Unauthorized') {
+                    showTrackerToast(`Error saving application: ${error.message}`);
+                }
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading("Generating your resume...");
+            const profile = Object.fromEntries(new FormData(e.target).entries());
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/generate_resume`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(profile)
+                });
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                const resumeJson = await response.json();
+                displayOutput(resumeJson, 'resume');
+            } catch (error) { 
+                if (error.message !== 'Unauthorized') showError(`Failed to generate resume. ${error.message}`); 
+            }
+        });
+
+        document.getElementById('resumeFile').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.type !== 'application/pdf') return showError("Please upload a valid PDF file.");
+            
+            showLoading("Parsing your PDF...");
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/upload/pdf`, { 
+                    method: 'POST', 
+                    body: formData 
+                });
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                const data = await response.json();
+                extractedPdfText = data.extracted_text;
+                document.getElementById('fileName').textContent = `File selected: ${file.name}`;
+                modificationZone.style.display = 'block';
+                outputContainer.innerHTML = '<div class="placeholder"><p>PDF parsed! Provide instructions below.</p></div>';
+            } catch (error) { 
+                if (error.message !== 'Unauthorized') showError(`Failed to parse PDF. ${error.message}`); 
+            }
+        });
+
+        document.getElementById('modificationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!extractedPdfText) return alert("Please upload a PDF first.");
+            showLoading("Applying modifications...");
+            const instructions = {
+                jobTitle: document.getElementById('jobTitle').value,
+                keySkills: document.getElementById('keySkills').value.split(',').map(s => s.trim())
+            };
+            const payload = { extracted_text: extractedPdfText, modification_instructions: instructions };
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/generate_modified_resume`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                const resumeJson = await response.json();
+                displayOutput(resumeJson, 'resume');
+            } catch (error) { 
+                if (error.message !== 'Unauthorized') showError(`Failed to modify resume. ${error.message}`); 
+            }
+        });
+
+        document.getElementById('coverLetterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            const cl_data = Object.fromEntries(new FormData(e.target).entries());
+            if (!cl_data.job_description || !cl_data.job_description.trim()) {
+                showError("Please enter a job description.");
+                return;
+            }
+            if (!cl_data.company_name || !cl_data.company_name.trim()) {
+                showError("Please enter a company name.");
+                return;
+            }
+            
+            // Check if user profile is filled
+            const user_profile = Object.fromEntries(new FormData(document.getElementById('profileForm')).entries());
+            if (!user_profile.name || !user_profile.name.trim()) {
+                showError("Please fill out your profile information first.");
+                return;
+            }
+            
+            showLoading("Crafting your cover letter...");
+            const payload = { user_profile, ...cl_data };
+            
+            // Debug logging
+            console.log("Cover letter payload:", payload);
+            
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/generate/cover-letter`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Cover letter error response:", errorText);
+                    throw new Error(`Server responded with ${response.status}: ${errorText}`);
+                }
+                const clText = await response.json();
+                displayOutput(clText, 'cover-letter');
+            } catch (error) { 
+                if (error.message !== 'Unauthorized') showError(`Failed to generate cover letter. ${error.message}`); 
+            }
+        });
+
+        document.getElementById('jobMatchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const profileText = getProfileAsText();
+            if (!profileText.trim()) return showError("Please fill out your professional profile first.");
+            showLoading("Finding the best jobs for you...");
+            const matchFormData = new FormData(e.target);
+            const payload = { user_profile_text: profileText, query: matchFormData.get('query'), location: matchFormData.get('location') };
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/match_jobs`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                const result = await response.json();
+                displayJobMatches(result.jobs || []);
+                // send event for search
+                try { await fetchWithAuth(`${API_BASE_URL}/events`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'job_search', metadata: Object.fromEntries(matchFormData.entries()) }) }); } catch(_){}
+            } catch (error) { 
+                if (error.message !== 'Unauthorized') showError(`Failed to fetch jobs. ${error.message}`); 
+            }
+        });
+
+        outputContainer.addEventListener('click', async function(e) {
+            // Event tracking helper
+            async function trackEvent(type, jobIndex) {
+                try {
+                    const job = currentJobsData[jobIndex] || {};
+                    await fetchWithAuth(`${API_BASE_URL}/events`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type, job_id: job.url || job.id || null, metadata: { title: job.title, company: job.company } })
+                    });
+                } catch (_) {}
+            }
+            if (e.target.classList.contains('generate-cl-btn')) {
+                const jobIndex = e.target.dataset.jobIndex;
+                trackEvent('generate_cover_letter', jobIndex);
+                const jobDetails = currentJobsData[jobIndex];
+                if (!jobDetails) return showError("Could not find job details.");
+                
+                // Check if user profile is filled
+                const user_profile = Object.fromEntries(new FormData(document.getElementById('profileForm')).entries());
+                if (!user_profile.name || !user_profile.name.trim()) {
+                    showError("Please fill out your profile information first.");
+                    return;
+                }
+                
+                showLoading("Tailoring cover letter...");
+                backToJobsBtn.style.display = 'block';
+                
+                // Create job object that matches the Job model
+                const job = {
+                    title: jobDetails.title || 'N/A',
+                    company: jobDetails.company || 'N/A',
+                    location: jobDetails.location || 'N/A',
+                    description: jobDetails.description || 'No description available.',
+                    url: jobDetails.url || '#',
+                    score: jobDetails.score || 0
+                };
+                
+                const payload = { 
+                    user_profile, 
+                    job: job,
+                    personal_note: ''  // Optional field
+                };
+                
+                // Debug logging
+                console.log("Matched cover letter payload:", payload);
+                
+                try {
+                    const response = await fetchWithAuth(`${API_BASE_URL}/generate_matched_cover_letter`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error("Matched cover letter error response:", errorText);
+                        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+                    }
+                    const clText = await response.json();
+                    displayOutput(clText, 'cover-letter');
+                } catch (error) { 
+                    if (error.message !== 'Unauthorized') showError(`Failed to generate cover letter. ${error.message}`); 
+                }
+            }
+            if (e.target.classList.contains('apply-btn')) {
+                const jobIndex = e.target.dataset.jobIndex;
+                trackEvent('apply_click', jobIndex);
+                const jobDetails = currentJobsData[jobIndex];
+                if (!currentResumeData) return alert("Please generate a resume first.");
+                if (!currentCoverLetterText) return alert("Please generate a cover letter for this job first.");
+                document.getElementById('modalJobTitle').innerText = jobDetails.title;
+                document.getElementById('modalJobCompany').innerText = jobDetails.company;
+                document.getElementById('modalResumeText').value = convertResumeJsonToText(currentResumeData);
+                document.getElementById('modalCoverLetterText').value = currentCoverLetterText;
+                document.getElementById('proceedToAppBtn').href = jobDetails.url;
+                document.getElementById('applyModal').style.display = 'flex';
+                addApplicationToTracker(jobDetails);
+            }
+            if (e.target.classList.contains('view-job-btn')) {
+                const jobIndex = e.target.dataset.jobIndex;
+                trackEvent('view_job', jobIndex);
+            }
+        });
+
+        backToJobsBtn.addEventListener('click', () => {
+            if (currentJobsData && currentJobsData.length > 0) {
+                displayJobMatches(currentJobsData);
+            }
+        });
+
+        // Delegate clicks for document view/download buttons in the Dashboard
+        document.addEventListener('click', (e) => {
+            const viewBtn = e.target.closest && e.target.closest('.doc-view-btn');
+            const dlBtn = e.target.closest && e.target.closest('.doc-download-btn');
+            if (viewBtn) {
+                const id = viewBtn.getAttribute('data-doc-id');
+                if (id) viewDocumentPdf(id);
+            } else if (dlBtn) {
+                const id = dlBtn.getAttribute('data-doc-id');
+                if (id) downloadDocumentPdf(id);
+            }
+        });
+
+        downloadBtn.addEventListener('click', async () => {
+            let endpoint = '', payload = {}, filename = '';
+            if (currentResumeData && !currentCoverLetterText) {
+                endpoint = '/export/pdf';
+                payload = currentResumeData;
+                filename = 'Generated_Resume.pdf';
+            } else if (currentCoverLetterText) {
+                endpoint = '/export/cover-letter/pdf';
+                // include basic profile fields so the cover letter PDF header can show name/email/phone
+                const profileForm = document.getElementById('profileForm');
+                const profile = Object.fromEntries(new FormData(profileForm).entries());
+                payload = { cover_letter_text: currentCoverLetterText, name: profile.name || '', email: profile.email || '', phone: profile.phone || '' };
+                filename = 'Generated_Cover_Letter.pdf';
+            } else { return alert("No content available to download."); }
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`PDF generation failed: ${response.statusText}`);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none'; a.href = url; a.download = filename;
+                document.body.appendChild(a); a.click();
+                window.URL.revokeObjectURL(url); a.remove();
+            } catch (error) { 
+                if (error.message !== 'Unauthorized') showError(error.message); 
+            }
+        });
+
+        downloadTxtBtn.addEventListener('click', () => {
+            let textToSave = '';
+            let filename = 'document.txt';
+            if (currentCoverLetterText) {
+                textToSave = currentCoverLetterText;
+                filename = 'cover-letter.txt';
+            } else if (currentResumeData) {
+                textToSave = convertResumeJsonToText(currentResumeData);
+                filename = 'resume.txt';
+            } else {
+                return alert("No content available to download.");
+            }
+            
+            const blob = new Blob([textToSave], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('application-list-body').addEventListener('click', async (e) => {
+            const target = e.target;
+            if (!target.classList.contains('edit-btn') && !target.classList.contains('delete-btn')) return;
+
+            const appId = target.dataset.id;
+            if (!appId) return;
+
+            if (target.classList.contains('delete-btn')) {
+                if (confirm('Are you sure you want to delete this record?')) {
+                    try {
+                        const response = await fetchWithAuth(`${API_BASE_URL}/applications/${appId}`, { method: 'DELETE' });
+                        if (!response.ok && response.status !== 204) throw new Error('Failed to delete');
+                        loadApplications();
+                    } catch (error) { 
+                        if (error.message !== 'Unauthorized') alert(`Error: ${error.message}`); 
+                    }
+                }
+            } else if (target.classList.contains('edit-btn')) {
+                const app = currentApplications.find(a => a.id == appId);
+                if (app) {
+                    document.getElementById('editAppId').value = app.id;
+                    document.getElementById('editJobTitle').value = app.position;
+                    document.getElementById('editCompany').value = app.company;
+                    document.getElementById('editLocation').value = app.location || '';
+                    document.getElementById('editSalaryRange').value = app.salary_range || '';
+                    document.getElementById('editJobType').value = app.job_type || 'onsite';
+                    document.getElementById('editApplicationStatus').value = app.application_status || 'applied';
+                    document.getElementById('editApplicationDate').value = app.application_date ? app.application_date.split('T')[0] : '';
+                    document.getElementById('editDeadline').value = app.deadline ? app.deadline.split('T')[0] : '';
+                    document.getElementById('editJobDescription').value = app.job_description || '';
+                    document.getElementById('editJobUrl').value = app.job_url || '';
+                    document.getElementById('editApplicationModal').style.display = 'flex';
+                }
+            }
+        });
+
+        document.getElementById('editApplicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const appId = document.getElementById('editAppId').value;
+            const deadlineValue = document.getElementById('editDeadline').value;
+            
+            const payload = {
+                position: document.getElementById('editJobTitle').value,
+                company: document.getElementById('editCompany').value,
+                location: document.getElementById('editLocation').value || null,
+                salary_range: document.getElementById('editSalaryRange').value || null,
+                job_type: document.getElementById('editJobType').value,
+                application_status: document.getElementById('editApplicationStatus').value,
+                application_date: document.getElementById('editApplicationDate').value || null,
+                deadline: deadlineValue || null,
+                job_description: document.getElementById('editJobDescription').value || null,
+                job_url: document.getElementById('editJobUrl').value || null
+            };
+
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/applications/${appId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    let errorMsg = 'Failed to update application.';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                           if (Array.isArray(errorData.detail)) {
+                               errorMsg += ' Details: ' + errorData.detail.map(err => `${err.loc[1]}: ${err.msg}`).join('; ');
+                           } else {
+                               errorMsg += ` Server says: ${errorData.detail}`;
+                           }
+                        }
+                    } catch (jsonError) {
+                        errorMsg += ` (Status: ${response.status} ${response.statusText})`;
+                    }
+                    throw new Error(errorMsg);
+                }
+
+                document.getElementById('editApplicationModal').style.display = 'none';
+                // Show toast that deadline update triggered email (backend handles sending)
+                if (payload.deadline && payload.deadline !== (currentApplications.find(a => String(a.id) === String(appId))?.deadline || '')) {
+                    showTrackerToast('Deadline updated. Reminder email sent.');
+                } else {
+                    showTrackerToast('Application updated.');
+                }
+                loadApplications();
+
+            } catch (error) {
+                if (error.message !== 'Unauthorized') alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.querySelectorAll(".modal-overlay").forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.classList.contains('modal-close-btn')) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        // Job Description Modal functionality
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('job-description-cell')) {
+                const fullDescription = e.target.getAttribute('title');
+                document.getElementById('fullJobDescription').textContent = fullDescription;
+                document.getElementById('jobDescriptionModal').style.display = 'flex';
+            }
+        });
+
+        // Removed auto-click on default tab to prevent unintended tab switches during async operations
+
+        const formToggle = document.getElementById('formToggle');
+        const uploadToggle = document.getElementById('uploadToggle');
+        const profileFormContainer = document.getElementById('profileFormContainer');
+        const uploadFormContainer = document.getElementById('uploadFormContainer');
+        formToggle.addEventListener('click', () => {
+            formToggle.classList.add('active');
+            uploadToggle.classList.remove('active');
+            profileFormContainer.style.display = 'block';
+            uploadFormContainer.style.display = 'none';
+        });
+        uploadToggle.addEventListener('click', () => {
+            uploadToggle.classList.add('active');
+            formToggle.classList.remove('active');
+            uploadFormContainer.style.display = 'block';
+            profileFormContainer.style.display = 'none';
+        });
+
+        // Logout Button Functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('supabase_token');
+            window.location.href = 'auth.html';
+        });
+
+        // Show signup info (read-only) before login if available in localStorage
+        function renderReadonlyAccount(profile) {
+            const container = document.getElementById('accountReadonly');
+            if (!container) return;
+            if (!profile) {
+                container.innerHTML = '<p style="color:#6b7280;">No signup information available. Please sign up or log in.</p>';
+                return;
+            }
+            const html = `
+                <div class="form-group"><strong>Full name:</strong> ${profile.name || ''}</div>
+                <div class="form-group"><strong>Username:</strong> ${profile.username || ''}</div>
+                <div class="form-group"><strong>Email:</strong> ${profile.email || ''}</div>
+                <div class="form-group"><strong>Date of Birth:</strong> ${profile.dob || ''}</div>
+                <div class="form-group"><strong>Phone:</strong> ${profile.phone || ''}</div>
+                <div class="form-group"><strong>Terms agreed:</strong> ${profile.tos ? 'Yes' : 'No'}</div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function initAccountView() {
+            const token = localStorage.getItem('supabase_token');
+            const readonly = document.getElementById('accountReadonly');
+            const form = document.getElementById('accountForm');
+            if (token) {
+                // logged in -> show editable form, hide readonly
+                if (readonly) readonly.style.display = 'none';
+                if (form) form.style.display = 'block';
+                // optionally fetch profile from server and populate fields (handled server-side template on initial render)
+            } else {
+                // not logged in -> show readonly info if available
+                if (form) form.style.display = 'none';
+                if (readonly) {
+                    readonly.style.display = 'block';
+                    try {
+                        const saved = JSON.parse(localStorage.getItem('saved_signup_profile') || 'null');
+                        renderReadonlyAccount(saved);
+                    } catch (e) {
+                        renderReadonlyAccount(null);
+                    }
+                }
+            }
+        }
+
+        // Initialize welcome message based on login status
+        async function initWelcomeMessage() {
+            const token = localStorage.getItem('supabase_token');
+            if (token) {
+                try {
+                    // Try to get user profile to show personalized welcome
+                    const resp = await fetchWithAuth(`${API_BASE_URL}/profile`);
+                    if (resp.ok) {
+                        const profile = await resp.json();
+                        const userName = profile.name || profile.full_name || 'User';
+                        updateWelcomeMessage(userName);
+                    } else {
+                        // Fallback to saved profile
+                        const savedProfile = localStorage.getItem('saved_signup_profile');
+                        if (savedProfile) {
+                            const profile = JSON.parse(savedProfile);
+                            const userName = profile.name || profile.full_name || 'User';
+                            updateWelcomeMessage(userName);
+                        }
+                    }
+                } catch (e) {
+                    console.log('Could not load user profile for welcome message');
+                }
+            }
+        }
+
+        // Update the main title with welcome message
+        function updateWelcomeMessage(userName) {
+            const mainTitle = document.getElementById('main-title');
+            const mainSubtitle = document.getElementById('main-subtitle');
+            if (mainTitle && userName && userName !== 'User') {
+                mainTitle.textContent = `Welcome back, ${userName}!`;
+                mainSubtitle.textContent = 'Ready to create your next professional document?';
+            }
+        }
+
+        // Initialize account view on load
+        initAccountView();
+        
+        // Initialize welcome message on load
+        initWelcomeMessage();
+
+        // Profile update form handler
+        document.getElementById('profileUpdateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            console.log('Profile update form submitted - preventing default behavior');
+            
+            // Ensure we stay on the Account tab
+            const accountTab = document.getElementById('Account');
+            if (accountTab && accountTab.style.display !== 'block') {
+                // Force open Account tab without navigation
+                document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+                accountTab.style.display = 'block';
+                
+                // Update navigation
+                document.querySelectorAll(".nav-link").forEach(tl => tl.classList.remove("active"));
+                const accountNavLink = document.querySelector("[onclick*=\"'Account'\"]");
+                if (accountNavLink) accountNavLink.classList.add("active");
+                
+                // Update title
+                mainTitle.textContent = 'My Account';
+                mainSubtitle.textContent = 'Manage your profile information and settings.';
+            }
+            
+            const formData = new FormData(e.target);
+            const profileData = Object.fromEntries(formData.entries());
+            
+            // Filter out empty values
+            const filteredData = Object.fromEntries(
+                Object.entries(profileData).filter(([key, value]) => value && value.trim() !== '')
+            );
+            
+            console.log('Profile data to update:', filteredData);
+            
+            if (Object.keys(filteredData).length === 0) {
+                showAccountMessage('No changes to update', 'error');
+                return false;
+            }
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-left-color:white;border-radius:50%;animation:spin 1s linear infinite;margin-right:0.5rem;"></span>Updating...';
+            
+            // Hide any existing messages
+            const messageEl = document.getElementById('accountStatusMessage');
+            if (messageEl) messageEl.style.display = 'none';
+            
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/update-profile`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(filteredData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Failed to update profile');
+                }
+                
+                showAccountMessage('Profile updated successfully!', 'success');
+                
+                // Update localStorage with new profile data
+                try {
+                    const savedProfile = localStorage.getItem('saved_signup_profile');
+                    if (savedProfile) {
+                        const profile = JSON.parse(savedProfile);
+                        // Update profile with new data
+                        Object.assign(profile, filteredData);
+                        localStorage.setItem('saved_signup_profile', JSON.stringify(profile));
+                    }
+                } catch (e) {
+                    console.log('Could not update local storage');
+                }
+                
+                // If email was updated, update the token and stored credentials
+                if (filteredData.email) {
+                    try {
+                        // Update the saved signup profile with new email for future logins
+                        const savedProfile = localStorage.getItem('saved_signup_profile');
+                        if (savedProfile) {
+                            const profile = JSON.parse(savedProfile);
+                            profile.email = filteredData.email;
+                            localStorage.setItem('saved_signup_profile', JSON.stringify(profile));
+                        }
+                        
+                        // Show additional message about email update
+                        setTimeout(() => {
+                            showAccountMessage('Email updated! You can now log in with your new email address.', 'success');
+                        }, 3000);
+                    } catch (e) {
+                        console.log('Could not update email in storage');
+                    }
+                }
+                
+                // Reload account info to reflect changes
+                loadAccountInfo();
+                
+                return false;
+                
+            } catch (error) {
+                if (error.message !== 'Unauthorized') {
+                    showAccountMessage(`Failed to update profile: ${error.message}`, 'error');
+                }
+                return false;
+            } finally {
+                // Restore button state
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            }
+        });
+
+        // Password change form handler
+        document.getElementById('passwordChangeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            console.log('Password change form submitted - preventing default behavior');
+            
+            const formData = new FormData(e.target);
+            const passwordData = Object.fromEntries(formData.entries());
+            
+            // Validate password confirmation
+            if (passwordData.new_password !== passwordData.confirm_password) {
+                showAccountMessage('New passwords do not match', 'error');
+                return false;
+            }
+            
+            if (passwordData.new_password.length < 6) {
+                showAccountMessage('New password must be at least 6 characters long', 'error');
+                return false;
+            }
+            
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/change-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        current_password: passwordData.current_password,
+                        new_password: passwordData.new_password
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Failed to change password');
+                }
+                
+                showAccountMessage('Password changed successfully!', 'success');
+                
+                // Update localStorage with new password
+                try {
+                    const savedProfile = localStorage.getItem('saved_signup_profile');
+                    if (savedProfile) {
+                        const profile = JSON.parse(savedProfile);
+                        profile.password = passwordData.new_password;
+                        localStorage.setItem('saved_signup_profile', JSON.stringify(profile));
+                    }
+                } catch (e) {
+                    console.log('Could not update local storage');
+                }
+                
+                // Clear the form
+                e.target.reset();
+                
+                // Reload account info to reflect changes
+                loadAccountInfo();
+                
+                return false;
+                
+            } catch (error) {
+                if (error.message !== 'Unauthorized') {
+                    showAccountMessage(`Failed to change password: ${error.message}`, 'error');
+                }
+                return false;
+            }
+        });
+
+        // Avatar upload functionality
+        const avatarUploadInput = document.getElementById('avatarUploadInput');
+        const updateAvatarBtn = document.getElementById('updateAvatarBtn');
+        const updateAvatarPreview = document.getElementById('updateAvatarPreview');
+
+        avatarUploadInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                updateAvatarBtn.disabled = true;
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showAccountMessage('Please select a valid image file', 'error');
+                updateAvatarBtn.disabled = true;
+                return;
+            }
+
+            // Validate file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                showAccountMessage('Image size must be less than 5MB', 'error');
+                updateAvatarBtn.disabled = true;
+                return;
+            }
+
+            // Preview the image
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                updateAvatarPreview.src = event.target.result;
+                updateAvatarBtn.disabled = false;
+                showAccountMessage('Image selected. Click "Update Picture" to save.', 'success');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        updateAvatarBtn.addEventListener('click', async function() {
+            const file = avatarUploadInput.files[0];
+            if (!file) return;
+
+            try {
+                // Convert to base64
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const base64Image = event.target.result;
+                    
+                    try {
+                        // Update the signup avatar display immediately
+                        document.getElementById('signupAvatar').src = base64Image;
+                        
+                        // Save to profile if user is logged in
+                        const token = localStorage.getItem('supabase_token');
+                        if (token) {
+                            try {
+                                const response = await fetchWithAuth(`${API_BASE_URL}/avatar`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ avatar_base64: base64Image })
+                                });
+                                
+                                if (!response.ok) {
+                                    const errorData = await response.json().catch(() => ({}));
+                                    throw new Error(errorData.detail || 'Failed to update avatar');
+                                }
+                                
+                                showAccountMessage('Profile picture updated successfully!', 'success');
+                            } catch (error) {
+                                if (error.message !== 'Unauthorized') {
+                                    showAccountMessage(`Failed to save avatar: ${error.message}`, 'error');
+                                }
+                            }
+                        }
+
+                        // Update local storage with new avatar
+                        try {
+                            const savedProfile = localStorage.getItem('saved_signup_profile');
+                            if (savedProfile) {
+                                const profile = JSON.parse(savedProfile);
+                                profile.avatar_base64 = base64Image;
+                                localStorage.setItem('saved_signup_profile', JSON.stringify(profile));
+                            }
+                        } catch (e) {
+                            console.log('Could not update local storage');
+                        }
+
+                        // Reset the upload input
+                        avatarUploadInput.value = '';
+                        updateAvatarBtn.disabled = true;
+                        
+                        // Reload account info to reflect changes
+                        loadAccountInfo();
+                        
+                    } catch (error) {
+                        showAccountMessage('Failed to update profile picture', 'error');
+                    }
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                showAccountMessage('Failed to process image', 'error');
+            }
+        });
+
+        // Password toggle functionality
+        document.getElementById('togglePasswordBtn').addEventListener('click', function() {
+            const passwordEl = document.getElementById('signupPassword');
+            const iconEl = document.getElementById('passwordToggleIcon');
+            
+            if (passwordEl.textContent === '••••••••') {
+                // Show password
+                passwordEl.textContent = window.signupPassword || '-';
+                iconEl.innerHTML = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+            } else {
+                // Hide password
+                passwordEl.textContent = '••••••••';
+                iconEl.innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+            }
+        });
+
+        // Global form prevention for Account tab - REMOVED to allow profile updates
+        // The profile update forms have their own event handlers that prevent default behavior
+        // This global prevention was interfering with the profile update functionality
+
+        // Interview Preparation functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('interview-prep-btn')) {
+                const jobIndex = e.target.getAttribute('data-job-index');
+                const jobTitle = e.target.getAttribute('data-job-title');
+                const jobCompany = e.target.getAttribute('data-job-company');
+                showInterviewPreparation(jobTitle, jobCompany, jobIndex);
+            }
+        });
+
+        // Show interview preparation modal
+        async function showInterviewPreparation(jobTitle, jobCompany, jobIndex) {
+            const modal = document.getElementById('interviewPrepModal');
+            const modalTitle = document.getElementById('interviewModalTitle');
+            const interviewContent = document.getElementById('interviewContent');
+            
+            modalTitle.textContent = `Interview Preparation - ${jobTitle} at ${jobCompany}`;
+            
+            // Show instant content first (fast loading)
+            const instantContent = generateInstantInterviewContent(jobTitle, jobCompany);
+            interviewContent.innerHTML = instantContent;
+            modal.style.display = 'flex';
+            
+            // Then enhance with real-time analysis in background
+            try {
+                const jobData = currentJobsData[jobIndex];
+                if (jobData && jobData.description) {
+                    // Show enhancement indicator
+                    const enhancementIndicator = document.createElement('div');
+                    enhancementIndicator.id = 'enhancement-indicator';
+                    enhancementIndicator.innerHTML = `
+                        <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border: 1px solid #0ea5e9; border-radius: 0.5rem; padding: 0.75rem; margin: 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 16px; height: 16px; border: 2px solid #0ea5e9; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <span style="color: #0369a1; font-size: 0.875rem; font-weight: 500;">Enhancing with real-time job analysis...</span>
+                        </div>
+                    `;
+                    interviewContent.appendChild(enhancementIndicator);
+                    
+                    // Call API in background
+                    const response = await fetch(`${API_BASE_URL}/generate_interview_prep`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('supabase_token')}`
+                        },
+                        body: JSON.stringify({
+                            job_title: jobTitle,
+                            company: jobCompany,
+                            job_description: jobData.description,
+                            job_url: jobData.url || ''
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const interviewData = await response.json();
+                        
+                        // Remove enhancement indicator
+                        const indicator = document.getElementById('enhancement-indicator');
+                        if (indicator) indicator.remove();
+                        
+                        // Enhance content with real-time data
+                        enhanceInterviewContent(interviewData, jobTitle, jobCompany);
+                    } else {
+                        // Remove indicator on error
+                        const indicator = document.getElementById('enhancement-indicator');
+                        if (indicator) indicator.remove();
+                    }
+                }
+            } catch (error) {
+                console.error('Error enhancing interview preparation:', error);
+                // Remove indicator on error
+                const indicator = document.getElementById('enhancement-indicator');
+                if (indicator) indicator.remove();
+            }
+        }
+
+        // Close interview preparation modal
+        function closeInterviewModal() {
+            const modal = document.getElementById('interviewPrepModal');
+            modal.style.display = 'none';
+        }
+
+        // Generate instant interview content (fast loading)
+        function generateInstantInterviewContent(jobTitle, jobCompany) {
+            const jobTitleLower = jobTitle.toLowerCase();
+            
+            // Quick skill detection based on job title
+            let quickSkills = [];
+            if (jobTitleLower.includes('python') || jobTitleLower.includes('backend')) quickSkills.push('Python', 'Backend Development');
+            if (jobTitleLower.includes('frontend') || jobTitleLower.includes('react')) quickSkills.push('React', 'JavaScript', 'Frontend Development');
+            if (jobTitleLower.includes('data') || jobTitleLower.includes('analyst')) quickSkills.push('Data Analysis', 'Machine Learning');
+            if (jobTitleLower.includes('devops') || jobTitleLower.includes('cloud')) quickSkills.push('DevOps', 'Cloud Computing');
+            if (jobTitleLower.includes('mobile') || jobTitleLower.includes('ios')) quickSkills.push('Mobile Development', 'iOS/Android');
+            if (jobTitleLower.includes('ui') || jobTitleLower.includes('design')) quickSkills.push('UI/UX Design', 'Design Systems');
+            
+            // Quick questions based on job title
+            let quickQuestions = [];
+            if (jobTitleLower.includes('python') || jobTitleLower.includes('developer')) {
+                quickQuestions = [
+                    {
+                        question: "Explain the difference between Python 2 and Python 3.",
+                        answer: "Python 3 introduced several breaking changes: print() is now a function, string handling is Unicode by default, integer division returns float, and improved exception handling. Python 2 reached end-of-life in 2020."
+                    },
+                    {
+                        question: "What are Python decorators?",
+                        answer: "Decorators are functions that modify other functions without changing their code. They use the @ symbol and are commonly used for logging, authentication, caching, and validation."
+                    },
+                    {
+                        question: "Explain Python's GIL (Global Interpreter Lock).",
+                        answer: "The GIL prevents multiple threads from executing Python bytecodes simultaneously. This means Python threads can't achieve true parallelism for CPU-bound tasks, but work fine for I/O-bound tasks."
+                    }
+                ];
+            } else if (jobTitleLower.includes('frontend') || jobTitleLower.includes('react')) {
+                quickQuestions = [
+                    {
+                        question: "Explain the difference between let, const, and var in JavaScript.",
+                        answer: "var has function scope and can be redeclared. let has block scope and cannot be redeclared but can be reassigned. const has block scope and cannot be redeclared or reassigned."
+                    },
+                    {
+                        question: "What is the Virtual DOM in React?",
+                        answer: "The Virtual DOM is a JavaScript representation of the real DOM. React uses it to optimize updates by comparing the virtual DOM with the previous version and only updating the parts that changed."
+                    },
+                    {
+                        question: "Explain CSS Grid vs Flexbox.",
+                        answer: "CSS Grid is for 2D layouts (rows and columns), while Flexbox is for 1D layouts (either row or column). Grid is better for complex page layouts, while Flexbox is better for component-level layouts."
+                    }
+                ];
+            } else if (jobTitleLower.includes('data') || jobTitleLower.includes('analyst')) {
+                quickQuestions = [
+                    {
+                        question: "Explain the difference between supervised and unsupervised learning.",
+                        answer: "Supervised learning uses labeled data to train models (classification and regression), while unsupervised learning finds patterns in unlabeled data (clustering and dimensionality reduction)."
+                    },
+                    {
+                        question: "What is the bias-variance tradeoff?",
+                        answer: "Bias is error from oversimplifying assumptions, variance is error from sensitivity to small fluctuations. High bias = underfitting, high variance = overfitting. The goal is to find the right balance."
+                    },
+                    {
+                        question: "Explain overfitting and how to prevent it.",
+                        answer: "Overfitting occurs when a model learns the training data too well, including noise, and performs poorly on new data. Prevention methods include cross-validation, regularization, dropout, and early stopping."
+                    }
+                ];
+            } else {
+                // General questions
+                quickQuestions = [
+                    {
+                        question: "Tell me about yourself.",
+                        answer: `I'm a passionate professional with experience in ${jobTitleLower}. I'm particularly excited about this opportunity at ${jobCompany} because of your innovative approach and company culture. In my previous roles, I've [specific achievements] and I'm looking forward to contributing to your team's success.`
+                    },
+                    {
+                        question: `Why do you want to work for ${jobCompany}?`,
+                        answer: `I'm drawn to ${jobCompany} because of your mission and values. I've been following your work and I'm impressed by your recent achievements. I believe my skills align perfectly with what you're looking for, and I'm excited about the opportunity to contribute to your continued success.`
+                    },
+                    {
+                        question: "Describe a challenging project you worked on.",
+                        answer: "I worked on [specific project] where I had to [challenge]. I approached it by [approach], which resulted in [positive outcome]. This experience taught me [lesson learned] and demonstrates my ability to handle complex problems."
+                    }
+                ];
+            }
+            
+            return `
+                <div class="interview-section">
+                    <h4>🎯 Interview Tips for ${jobTitle}</h4>
+                    <div class="interview-tips">
+                        <h5>Quick Preparation Checklist:</h5>
+                        <ul>
+                            <li>Research ${jobCompany} thoroughly - their mission, values, recent news, and products</li>
+                            <li>Review the job description and prepare examples that match their requirements</li>
+                            <li>Practice your elevator pitch (30-second introduction)</li>
+                            <li>Prepare thoughtful questions about the role and company</li>
+                            <li>Test your technology setup if it's a virtual interview</li>
+                        </ul>
+                    </div>
+                </div>
+
+                ${quickSkills.length > 0 ? `
+                <div class="interview-section">
+                    <h4>🛠️ Key Skills for ${jobTitle}</h4>
+                    <div class="skills-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                        ${quickSkills.map(skill => 
+                            `<span style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); color: #0369a1; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #0ea5e9;">${skill}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="interview-section">
+                    <h4>❓ Essential Interview Questions</h4>
+            ` + quickQuestions.map((qa, index) => `
+                    <div class="question-item">
+                        <div class="question">Q${index + 1}: ${qa.question}</div>
+                        <div class="answer">${qa.answer}</div>
+                    </div>
+                `).join('') + `
+                </div>
+
+                <div class="interview-section">
+                    <h4>💡 Interview Best Practices</h4>
+                    <div class="interview-tips">
+                        <h5>During the Interview:</h5>
+                        <ul>
+                            <li>Use the STAR method (Situation, Task, Action, Result) for behavioral questions</li>
+                            <li>Be specific with examples and quantify your achievements when possible</li>
+                            <li>Ask clarifying questions if you don't understand something</li>
+                            <li>Show enthusiasm for the role and company</li>
+                            <li>Take notes if appropriate</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Enhance interview content with real-time data
+        function enhanceInterviewContent(interviewData, jobTitle, jobCompany) {
+            const interviewContent = document.getElementById('interviewContent');
+            
+            // Create enhanced content
+            let enhancedContent = `
+                <div class="interview-section">
+                    <h4>🎯 Job Requirements Analysis</h4>
+                    <div class="interview-tips">
+                        <h5>Key Requirements:</h5>
+                        <ul>
+                            ${interviewData.job_requirements.map(req => `<li>${req}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="interview-section">
+                    <h4>🛠️ Required Skills</h4>
+                    <div class="skills-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                        ${interviewData.required_skills.map(skill => 
+                            `<span style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); color: #0369a1; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #0ea5e9;">${skill}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+
+                <div class="interview-section">
+                    <h4>🎯 Enhanced Interview Tips</h4>
+                    <div class="interview-tips">
+                        <h5>Personalized Preparation:</h5>
+                        <ul>
+                            ${interviewData.interview_tips.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="interview-section">
+                    <h4>💻 Technical Questions</h4>
+            `;
+
+            interviewData.technical_questions.forEach((qa, index) => {
+                enhancedContent += `
+                    <div class="question-item">
+                        <div class="question">Q${index + 1}: ${qa.question}</div>
+                        <div class="answer">${qa.answer}</div>
+                    </div>
+                `;
+            });
+
+            enhancedContent += `
+                </div>
+
+                <div class="interview-section">
+                    <h4>👥 Behavioral Questions</h4>
+            `;
+
+            interviewData.behavioral_questions.forEach((qa, index) => {
+                enhancedContent += `
+                    <div class="question-item">
+                        <div class="question">Q${index + 1}: ${qa.question}</div>
+                        <div class="answer">${qa.answer}</div>
+                    </div>
+                `;
+            });
+
+            enhancedContent += `
+                </div>
+
+                <div class="interview-section">
+                    <h4>🏢 Company-Specific Questions</h4>
+            `;
+
+            interviewData.company_specific_questions.forEach((qa, index) => {
+                enhancedContent += `
+                    <div class="question-item">
+                        <div class="question">Q${index + 1}: ${qa.question}</div>
+                        <div class="answer">${qa.answer}</div>
+                    </div>
+                `;
+            });
+
+            enhancedContent += `
+                </div>
+
+                <div class="interview-section">
+                    <h4>💡 Additional Tips</h4>
+                    <div class="interview-tips">
+                        <h5>During the Interview:</h5>
+                        <ul>
+                            <li>Use the STAR method (Situation, Task, Action, Result) for behavioral questions</li>
+                            <li>Be specific with examples and quantify your achievements when possible</li>
+                            <li>Ask clarifying questions if you don't understand something</li>
+                            <li>Show enthusiasm for the role and company</li>
+                            <li>Take notes if appropriate</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            // Replace content with enhanced version
+            interviewContent.innerHTML = enhancedContent;
+        }
+
+        // Generate real-time interview content based on API response
+        function generateRealTimeInterviewContent(interviewData, jobTitle, jobCompany) {
+            let content = `
+                <div class="interview-section">
+                    <h4>🎯 Job Requirements Analysis</h4>
+                    <div class="interview-tips">
+                        <h5>Key Requirements:</h5>
+                        <ul>
+                            ${interviewData.job_requirements.map(req => `<li>${req}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="interview-section">
+                    <h4>🛠️ Required Skills</h4>
+                    <div class="skills-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                        ${interviewData.required_skills.map(skill => 
+                            `<span style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); color: #0369a1; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #0ea5e9;">${skill}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+
+                <div class="interview-section">
+                    <h4>🎯 Interview Tips for ${jobTitle}</h4>
+                    <div class="interview-tips">
+                        <h5>Preparation Checklist:</h5>
+                        <ul>
+                            ${interviewData.interview_tips.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="interview-section">
+                    <h4>💻 Technical Questions</h4>
+            `;
+
+            interviewData.technical_questions.forEach((qa, index) => {
+                content += `
+                    <div class="question-item">
+                        <div class="question">Q${index + 1}: ${qa.question}</div>
+                        <div class="answer">${qa.answer}</div>
+                    </div>
+                `;
+            });
+
+            content += `
+                </div>
+
+                <div class="interview-section">
+                    <h4>👥 Behavioral Questions</h4>
+            `;
+
+            interviewData.behavioral_questions.forEach((qa, index) => {
+                content += `
+                    <div class="question-item">
+                        <div class="question">Q${index + 1}: ${qa.question}</div>
+                        <div class="answer">${qa.answer}</div>
+                    </div>
+                `;
+            });
+
+            content += `
+                </div>
+
+                <div class="interview-section">
+                    <h4>🏢 Company-Specific Questions</h4>
+            `;
+
+            interviewData.company_specific_questions.forEach((qa, index) => {
+                content += `
+                    <div class="question-item">
+                        <div class="question">Q${index + 1}: ${qa.question}</div>
+                        <div class="answer">${qa.answer}</div>
+                    </div>
+                `;
+            });
+
+            content += `
+                </div>
+
+                <div class="interview-section">
+                    <h4>💡 Additional Tips</h4>
+                    <div class="interview-tips">
+                        <h5>During the Interview:</h5>
+                        <ul>
+                            <li>Use the STAR method (Situation, Task, Action, Result) for behavioral questions</li>
+                            <li>Be specific with examples and quantify your achievements when possible</li>
+                            <li>Ask clarifying questions if you don't understand something</li>
+                            <li>Show enthusiasm for the role and company</li>
+                            <li>Take notes if appropriate</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            return content;
+        }
+
+        // Reset profile functionality
+        document.getElementById('resetProfileBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all changes? This will reload your original profile data.')) {
+                loadAccountInfo();
+                showAccountMessage('Profile reset to original values', 'success');
+            }
+        });
+
+        // Password visibility toggle functionality
+        document.getElementById('togglePasswordBtn').addEventListener('click', function() {
+            const passwordEl = document.getElementById('signupPassword');
+            const iconEl = document.getElementById('passwordToggleIcon');
+            
+            if (passwordEl.textContent === '••••••••') {
+                passwordEl.textContent = window.signupPassword || 'No password stored';
+                iconEl.innerHTML = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+            } else {
+                passwordEl.textContent = '••••••••';
+                iconEl.innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+            }
+        });
+
+    </script>
+</body>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Cover Letter</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; color:#111827; margin:0; padding:0; }
+        .page { width:8.5in; max-width:100%; margin:0 auto; background:#fff; padding:0.9in; box-sizing:border-box; }
+        .header { margin-bottom:12px; }
+        .from { font-size:10pt; color:#374151; }
+        .salutation { margin-top:16px; font-size:11pt; }
+        .content { margin-top:8px; font-size:10pt; line-height:1.45; white-space:pre-wrap; word-wrap:break-word; }
+        .closing { margin-top:18px; }
+        @media print { a[href]:after { content: " (" attr(href) ")"; } }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="from">
+                <div>{{ name }}</div>
+                <div>{{ email }}{% if phone %} &nbsp; | &nbsp; {{ phone }}{% endif %}</div>
+            </div>
+        </div>
+
+        <div class="salutation">
+            Dear Hiring Manager,
+        </div>
+
+        <div class="content">
+            {{ cover_letter_text }}
+        </div>
+
+        <div class="closing">
+            Sincerely,
+            <div style="margin-top:8px; font-weight:700;">{{ name }}</div>
+        </div>
+    </div>
+</body>
+</html>
+
