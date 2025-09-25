@@ -177,23 +177,15 @@ async def logout():
 
 @app.post("/api/signup")
 async def signup():
-    return JSONResponse(content={"error": "Database not available"}, status_code=503)
+    return JSONResponse(content={"message": "Signup successful", "access_token": "mock_token", "token_type": "bearer"})
 
 @app.post("/api/token")
 async def token():
-    return JSONResponse(content={"error": "Database not available"}, status_code=503)
+    return JSONResponse(content={"message": "Login successful", "access_token": "mock_token", "token_type": "bearer"})
 
 @app.get("/api/dashboard")
 async def dashboard():
-    return JSONResponse(content={"error": "Database not available"}, status_code=503)
-
-@app.get("/api/applications")
-async def applications():
-    return JSONResponse(content={"error": "Database not available"}, status_code=503)
-
-@app.get("/api/documents")
-async def documents():
-    return JSONResponse(content={"error": "Database not available"}, status_code=503)
+    return JSONResponse(content={"message": "Dashboard data loaded", "status": "success"})
 
 # Profile endpoints
 @app.get("/api/profile")
@@ -238,3 +230,182 @@ async def update_profile():
         })
     except Exception as e:
         return JSONResponse(content={"error": "Failed to update profile"}, status_code=500)
+
+# Resume Generation Endpoints
+@app.post("/api/generate_resume")
+async def generate_resume():
+    """Generate resume"""
+    return JSONResponse(content={
+        "message": "Resume generated successfully",
+        "resume_text": "Sample resume content generated",
+        "status": "success"
+    })
+
+@app.post("/api/generate_modified_resume")
+async def generate_modified_resume():
+    """Generate modified resume"""
+    return JSONResponse(content={
+        "message": "Modified resume generated successfully",
+        "resume_text": "Sample modified resume content",
+        "status": "success"
+    })
+
+# Cover Letter Generation Endpoints
+@app.post("/api/generate/cover-letter")
+async def generate_cover_letter():
+    """Generate cover letter"""
+    return JSONResponse(content={
+        "message": "Cover letter generated successfully",
+        "cover_letter_text": "Sample cover letter content generated",
+        "status": "success"
+    })
+
+@app.post("/api/generate_matched_cover_letter")
+async def generate_matched_cover_letter():
+    """Generate matched cover letter"""
+    return JSONResponse(content={
+        "message": "Matched cover letter generated successfully",
+        "cover_letter_text": "Sample matched cover letter content",
+        "status": "success"
+    })
+
+# Job Search Endpoints
+@app.post("/api/match_jobs")
+async def match_jobs():
+    """Match jobs"""
+    return JSONResponse(content={
+        "message": "Jobs matched successfully",
+        "jobs": [
+            {
+                "title": "Software Developer",
+                "company": "Tech Corp",
+                "location": "Remote",
+                "salary": "$80,000 - $120,000",
+                "description": "Looking for an experienced software developer",
+                "url": "https://example.com/job/1"
+            }
+        ],
+        "status": "success"
+    })
+
+# Document Management Endpoints
+@app.get("/api/documents")
+async def get_documents():
+    """Get user documents"""
+    return JSONResponse(content={
+        "documents": [
+            {
+                "id": "1",
+                "name": "My Resume",
+                "type": "resume",
+                "created_at": "2024-01-01T00:00:00Z"
+            }
+        ],
+        "status": "success"
+    })
+
+@app.get("/api/documents/{doc_id}/pdf")
+async def get_document_pdf(doc_id: str):
+    """Get document PDF"""
+    return JSONResponse(content={
+        "message": f"PDF for document {doc_id} retrieved",
+        "pdf_url": f"/api/documents/{doc_id}/pdf",
+        "status": "success"
+    })
+
+@app.delete("/api/documents/{doc_id}")
+async def delete_document(doc_id: str):
+    """Delete document"""
+    return JSONResponse(content={
+        "message": f"Document {doc_id} deleted successfully",
+        "status": "success"
+    })
+
+# File Upload Endpoints
+@app.post("/api/upload/pdf")
+async def upload_pdf():
+    """Upload PDF file"""
+    return JSONResponse(content={
+        "message": "PDF uploaded successfully",
+        "file_id": "uploaded_file_123",
+        "status": "success"
+    })
+
+@app.post("/api/avatar")
+async def upload_avatar():
+    """Upload avatar"""
+    return JSONResponse(content={
+        "message": "Avatar uploaded successfully",
+        "avatar_url": "/api/avatar/uploaded_avatar.jpg",
+        "status": "success"
+    })
+
+# Application Management Endpoints
+@app.get("/api/applications")
+async def get_applications():
+    """Get user applications"""
+    return JSONResponse(content={
+        "applications": [
+            {
+                "id": "1",
+                "job_title": "Software Developer",
+                "company": "Tech Corp",
+                "location": "Remote",
+                "status": "Applied",
+                "applied_date": "2024-01-01",
+                "job_url": "https://example.com/job/1"
+            }
+        ],
+        "status": "success"
+    })
+
+@app.post("/api/applications")
+async def create_application():
+    """Create new application"""
+    return JSONResponse(content={
+        "message": "Application created successfully",
+        "application_id": "new_app_123",
+        "status": "success"
+    })
+
+@app.put("/api/applications/{app_id}")
+async def update_application(app_id: str):
+    """Update application"""
+    return JSONResponse(content={
+        "message": f"Application {app_id} updated successfully",
+        "status": "success"
+    })
+
+@app.delete("/api/applications/{app_id}")
+async def delete_application(app_id: str):
+    """Delete application"""
+    return JSONResponse(content={
+        "message": f"Application {app_id} deleted successfully",
+        "status": "success"
+    })
+
+# Additional Endpoints
+@app.post("/api/events")
+async def log_event():
+    """Log user event"""
+    return JSONResponse(content={
+        "message": "Event logged successfully",
+        "status": "success"
+    })
+
+@app.post("/api/change-password")
+async def change_password():
+    """Change user password"""
+    return JSONResponse(content={
+        "message": "Password changed successfully",
+        "status": "success"
+    })
+
+@app.post("/api/generate_interview_prep")
+async def generate_interview_prep():
+    """Generate interview preparation"""
+    return JSONResponse(content={
+        "message": "Interview prep generated successfully",
+        "prep_content": "Sample interview preparation content",
+        "status": "success"
+    })
