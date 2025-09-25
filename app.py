@@ -170,6 +170,11 @@ async def dashboard():
         """)
 
 # API endpoints (without database)
+@app.post("/api/logout")
+async def logout():
+    """Logout endpoint - clears token on client side"""
+    return JSONResponse(content={"message": "Logged out successfully"})
+
 @app.post("/api/signup")
 async def signup():
     return JSONResponse(content={"error": "Database not available"}, status_code=503)

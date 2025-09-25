@@ -933,7 +933,7 @@
             if (response.status === 401) {
                 // Token is invalid or expired, log the user out
                 localStorage.removeItem('supabase_token');
-                window.location.href = 'auth.html';
+                window.location.href = '/auth';
                 // Throw an error to stop further execution in the calling function
                 throw new Error('Unauthorized');
             }
@@ -2115,7 +2115,7 @@
         // Logout Button Functionality
         document.getElementById('logout-btn').addEventListener('click', () => {
             localStorage.removeItem('supabase_token');
-            window.location.href = 'auth.html';
+            window.location.href = '/auth';
         });
 
         // Show signup info (read-only) before login if available in localStorage
