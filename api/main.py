@@ -105,6 +105,13 @@ async def test():
 def handler(request):
     return app(request.scope, request.receive, request.send)
 
+# Alternative handler format for Vercel
+async def app_handler(request):
+    return await app(request.scope, request.receive, request.send)
+
+# Export both handlers
+__all__ = ["handler", "app_handler"]
+
 # For local development
 if __name__ == "__main__":
     import uvicorn
