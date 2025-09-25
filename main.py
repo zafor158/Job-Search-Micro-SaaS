@@ -41,9 +41,14 @@ from services import (
 load_dotenv()
 app = FastAPI(title="AI DocGen")
 
+# Get allowed origins from environment or use defaults
+ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+if ALLOWED_ORIGINS == ["*"]:
+    ALLOWED_ORIGINS = ["*"]  # Keep wildcard for development
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

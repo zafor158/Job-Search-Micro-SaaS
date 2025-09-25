@@ -28,6 +28,7 @@
     "GROQ_API_KEY": "@groq_api_key",
     "ADZUNA_APP_ID": "@adzuna_app_id",
     "ADZUNA_API_KEY": "@adzuna_api_key",
-    "JSEARCH_API_KEY": "@jsearch_api_key"
+    "JSEARCH_API_KEY": "@jsearch_api_key",
+    "ALLOWED_ORIGINS": "@allowed_origins"
   }
 }
