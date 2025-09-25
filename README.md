@@ -73,27 +73,52 @@ python start_server.py
 
 The application will be available at `http://localhost:8000`
 
+## Deployment
+
+### Vercel Deployment (Recommended)
+
+This project is configured for easy deployment on Vercel:
+
+1. **Push to GitHub**: Ensure your code is pushed to GitHub
+2. **Connect to Vercel**: Import your repository at [vercel.com](https://vercel.com)
+3. **Set Environment Variables**: Add all variables from `.env.example`
+4. **Deploy**: Click deploy and your app will be live!
+
+For detailed deployment instructions, see [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
+
+### Other Deployment Options
+
+- **Railway**: Good for full-stack apps with databases
+- **Render**: Alternative to Vercel with database support
+- **DigitalOcean App Platform**: Full control over deployment
+
 ## Project Structure
 
 ```
 Job-Search-Micro-SaaS/
-├── 00_complete_setup.sql      # Complete database setup
-├── 01_create_tables.sql       # Database tables
-├── 02_create_indexes.sql      # Database indexes
-├── 03_create_functions.sql    # Database functions
-├── 04_create_triggers.sql     # Database triggers
+├── api/                      # Vercel serverless functions
+│   ├── main.py              # Vercel entry point
+│   └── index.py             # Alternative handler
+├── vercel.json              # Vercel configuration
+├── VERCEL_DEPLOYMENT.md     # Detailed deployment guide
+├── 00_complete_setup.sql    # Complete database setup
+├── 01_create_tables.sql     # Database tables
+├── 02_create_indexes.sql    # Database indexes
+├── 03_create_functions.sql  # Database functions
+├── 04_create_triggers.sql   # Database triggers
 ├── 05_create_rls_policies.sql # Row Level Security policies
-├── 06_sample_data.sql         # Sample data
+├── 06_sample_data.sql       # Sample data
 ├── 07_verification_queries.sql # Verification queries
-├── main.py                    # FastAPI application
-├── services.py                # Business logic services
-├── start_server.py            # Server startup script
-├── ats_optimizer.py           # AI resume optimization
-├── auth.html                  # Login/signup page
-├── indexnew.html              # Main application interface
-├── Template/                  # Resume and cover letter templates
-├── data/profiles/             # Sample user profiles
-└── requirements.txt           # Python dependencies
+├── main.py                  # FastAPI application
+├── services.py              # Business logic services
+├── start_server.py          # Server startup script
+├── ats_optimizer.py         # AI resume optimization
+├── auth.html                # Login/signup page
+├── indexnew.html            # Main application interface
+├── Template/                # Resume and cover letter templates
+├── data/profiles/           # Sample user profiles
+├── .env.example             # Environment variables template
+└── requirements.txt         # Python dependencies
 ```
 
 ## API Endpoints
