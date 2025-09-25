@@ -194,3 +194,47 @@ async def applications():
 @app.get("/api/documents")
 async def documents():
     return JSONResponse(content={"error": "Database not available"}, status_code=503)
+
+# Profile endpoints
+@app.get("/api/profile")
+async def get_profile():
+    """Get user profile from localStorage"""
+    try:
+        # In a real app, this would get the user from JWT token
+        # For now, we'll return a mock profile or empty profile
+        return JSONResponse(content={
+            "email": "user@example.com",
+            "name": "User Name",
+            "username": "username",
+            "phone": "+1234567890",
+            "date_of_birth": "1990-01-01",
+            "default_skills": "Python, JavaScript, React",
+            "default_experience": "Software Developer with 5+ years experience",
+            "default_education": "Bachelor's in Computer Science",
+            "default_projects": "Built multiple web applications",
+            "avatar_url": None
+        })
+    except Exception as e:
+        return JSONResponse(content={"error": "Failed to fetch profile"}, status_code=500)
+
+@app.put("/api/update-profile")
+async def update_profile():
+    """Update user profile"""
+    try:
+        # In a real app, this would update the database
+        # For now, we'll return success
+        return JSONResponse(content={
+            "message": "Profile updated successfully",
+            "email": "user@example.com",
+            "name": "Updated Name",
+            "username": "updated_username",
+            "phone": "+1234567890",
+            "date_of_birth": "1990-01-01",
+            "default_skills": "Python, JavaScript, React, Node.js",
+            "default_experience": "Senior Software Developer with 5+ years experience",
+            "default_education": "Bachelor's in Computer Science",
+            "default_projects": "Built multiple web applications and mobile apps",
+            "avatar_url": None
+        })
+    except Exception as e:
+        return JSONResponse(content={"error": "Failed to update profile"}, status_code=500)

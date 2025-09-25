@@ -613,6 +613,9 @@
                                     Update Your Account
                                 </h4>
 
+                                <!-- Status Message -->
+                                <div id="accountStatusMessage" style="display: none; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-weight: 500;"></div>
+
                                 <!-- Profile Update Form -->
                                 <form id="profileUpdateForm">
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
@@ -903,7 +906,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const API_BASE_URL = window.location.origin + '/api';
         let extractedPdfText = '', currentResumeData = null, currentJobsData = [], currentCoverLetterText = '', currentApplications = [];
 
     // DOM Elements
@@ -1159,6 +1162,8 @@
                 // Display sign-up information
                 if (signupProfile) {
                     displaySignupInfo(signupProfile);
+                    // Also populate update forms with localStorage data
+                    populateUpdateForms(signupProfile);
                 } else {
                     displaySignupInfo({});
                 }
@@ -1170,10 +1175,17 @@
                         const resp = await fetchWithAuth(`${API_BASE_URL}/profile`);
                         if (resp.ok) {
                             const profile = await resp.json();
+                            // Update display with server data
+                            displaySignupInfo(profile);
                             populateUpdateForms(profile);
                         }
                     } catch (err) {
-                        console.log('User not logged in or profile not found');
+                        console.log('Server profile not available, using localStorage data');
+                        // If server fails, still show localStorage data
+                        if (signupProfile) {
+                            displaySignupInfo(signupProfile);
+                            populateUpdateForms(signupProfile);
+                        }
                     }
                 }
 
