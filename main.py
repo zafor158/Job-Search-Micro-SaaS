@@ -12,7 +12,13 @@ from dotenv import load_dotenv
 from typing import List, Optional
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
-from supabase import create_client, Client
+# Import supabase with error handling
+try:
+    from supabase import create_client, Client
+except ImportError:
+    print("Warning: Supabase client not available. Database functionality will be limited.")
+    create_client = None
+    Client = None
 from pydantic import BaseModel
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Response, Request
@@ -81,6 +87,9 @@ try:
         print("Creating Supabase client with default values for development...")
     else:
         print("✅ Using Supabase configuration from environment variables.")
+    
+    if create_client is None:
+        raise Exception("Supabase client not available. Please install supabase package.")
     
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     print("✅ Supabase client created successfully!")
@@ -1521,10 +1530,13 @@ async def generate_interview_prep(request: InterviewPrepRequest, current_user = 
         """
         
         # Use Groq API to generate content
-        from groq import Groq
-        import os
-        
-        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        try:
+            from groq import Groq
+            import os
+            
+            client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        except ImportError:
+            raise HTTPException(status_code=503, detail="Groq API not available. Please install groq package.")
         
         chat_completion = client.chat.completions.create(
             model="llama3-70b-8192",
