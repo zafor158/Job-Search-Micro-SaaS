@@ -20,24 +20,72 @@ app.add_middleware(
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Main app interface - serve indexnew.html as the homepage
+# Main app interface - redirect to login first
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    try:
-        with open("indexnew.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    except FileNotFoundError:
-        return HTMLResponse(content="""
-        <!DOCTYPE html>
-        <html>
-        <head><title>Job Search Micro-SaaS</title></head>
-        <body>
-            <h1>Welcome to Job Search Micro-SaaS</h1>
-            <p>Main interface not found. Please check file paths.</p>
-            <a href="/auth">Go to Login</a>
-        </body>
-        </html>
-        """, status_code=404)
+    # Redirect to login page since users need to authenticate first
+    return HTMLResponse(content="""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Job Search Micro-SaaS</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                margin: 0;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+            }
+            .container {
+                text-align: center;
+                background: white;
+                padding: 3rem;
+                border-radius: 1rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                max-width: 400px;
+                width: 90%;
+            }
+            h1 {
+                color: #333;
+                margin-bottom: 1rem;
+                font-size: 2rem;
+            }
+            p {
+                color: #666;
+                margin-bottom: 2rem;
+                line-height: 1.6;
+            }
+            .btn {
+                background: linear-gradient(90deg, #5b21b6, #4f46e5);
+                color: white;
+                padding: 0.75rem 2rem;
+                border: none;
+                border-radius: 0.5rem;
+                font-weight: 600;
+                text-decoration: none;
+                display: inline-block;
+                transition: transform 0.2s;
+            }
+            .btn:hover {
+                transform: translateY(-2px);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Job Search Micro-SaaS</h1>
+            <p>Welcome to your job search management platform. Please log in to access your dashboard and manage your applications.</p>
+            <a href="/auth" class="btn">Log In / Sign Up</a>
+        </div>
+    </body>
+    </html>
+    """)
 
 # API health check endpoint
 @app.get("/api/health")
@@ -67,7 +115,7 @@ async def auth():
         </html>
         """, status_code=404)
 
-# Main app page
+# Main app page - requires authentication
 @app.get("/index", response_class=HTMLResponse)
 async def index():
     try:
@@ -77,11 +125,45 @@ async def index():
         return HTMLResponse(content="""
         <!DOCTYPE html>
         <html>
-        <head><title>App - Job Search Micro-SaaS</title></head>
+        <head>
+            <title>Dashboard - Job Search Micro-SaaS</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {
+                    font-family: 'Inter', sans-serif;
+                    background: #f8fafc;
+                    margin: 0;
+                    padding: 2rem;
+                }
+                .container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                h1 { color: #333; margin-bottom: 1rem; }
+                p { color: #666; margin-bottom: 2rem; }
+                .btn {
+                    background: linear-gradient(90deg, #5b21b6, #4f46e5);
+                    color: white;
+                    padding: 0.75rem 2rem;
+                    border: none;
+                    border-radius: 0.5rem;
+                    font-weight: 600;
+                    text-decoration: none;
+                    display: inline-block;
+                }
+            </style>
+        </head>
         <body>
-            <h1>Main App</h1>
-            <p>Main page not found. Please check file paths.</p>
-            <a href="/">Go Home</a>
+            <div class="container">
+                <h1>Dashboard</h1>
+                <p>Main app interface not found. Please check file paths.</p>
+                <a href="/auth" class="btn">Go to Login</a>
+            </div>
         </body>
         </html>
         """, status_code=404)
