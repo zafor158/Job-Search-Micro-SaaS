@@ -11,6 +11,22 @@ A comprehensive job search management platform built with FastAPI, Supabase, and
 - 📈 **Dashboard Analytics** - Track application progress and success rates
 - 🎨 **Modern UI** - Professional, responsive design
 
+## System UI/UX
+<img width="1919" height="907" alt="image" src="https://github.com/user-attachments/assets/afc60357-e6a9-4f31-a515-4b8c90ba6f66" />
+<img width="1919" height="917" alt="image" src="https://github.com/user-attachments/assets/95f75cdb-af0f-47dd-9b7a-e93d0b310f72" />
+<img width="1919" height="917" alt="image" src="https://github.com/user-attachments/assets/5a0b8a5a-8393-4288-80c3-4258262af2b5" />
+<img width="1918" height="909" alt="image" src="https://github.com/user-attachments/assets/dc99952d-cfe9-4eba-941f-2c1a62f71372" />
+<img width="1919" height="904" alt="image" src="https://github.com/user-attachments/assets/17a79e8f-97fc-4642-8435-442dcc7a4e2e" />
+<img width="1918" height="911" alt="image" src="https://github.com/user-attachments/assets/c2ff3618-c749-4878-b93a-bc6bd8b35ef4" />
+<img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/9d2c321f-4572-43b6-9e4b-65e959d11583" />
+
+
+
+
+
+
+
+
 ## Tech Stack
 
 - **Backend**: FastAPI, Python
